@@ -14,6 +14,11 @@
 4. 读取变量 </br>
 ``ELASTICSEARCH_BASE_URL = os.getenv('ELASTICSEARCH_BASE_URL')``
 
+## Function Calling 
+在大型语言模型（LLM，Large Language Models）如OpenAI的GPT-4中，Function Calling 是一种增强模型功能和交互能力的重要技术。这种技术允许语言模型在对话中调用特定的函数，以便执行特定的任务或获取外部数据。
+
+Function Calling完全依赖LLM决定是否触发函数调用，所以需要再次进行槽位和意图分析（再次分析应该也是LLM分析？？？），主动触发函数调用
+
 ## RAG
 RAG（Retrieval-Augmented Generation）是一种结合检索（Retrieval）和生成（Generation）技术的方法，用于改进自然语言处理（NLP）任务中的文本生成。具体来说，RAG模型首先从一个大型文档集合中检索相关文档，然后使用这些文档作为参考，通过生成模型生成回答或内容。这样的方法能够提高生成文本的准确性和相关性，特别是在需要具体事实和详细信息的任务中。以下是RAG的工作原理：
 
