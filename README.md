@@ -39,3 +39,6 @@ RAG（Retrieval-Augmented Generation）是一种结合检索（Retrieval）和�
 4. 针对向量数据库返回结果做重排序 
 5. 针对ES和向量数据库返回结果做融合排序 
 6. 将问题描述和融合排序后的查询结果整合prompt，提交给大模型
+
+## AGENT
+???
