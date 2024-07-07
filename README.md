@@ -14,6 +14,12 @@
 4. 读取变量 </br>
 ``ELASTICSEARCH_BASE_URL = os.getenv('ELASTICSEARCH_BASE_URL')``
 
+## 生成requestments.txt
+1. 安装pipreqs
+``pip install pipreqs``
+2. 生成requestment
+``pipreqs ./ --encoding=utf8 --force``
+
 ## Function Calling 
 在大型语言模型（LLM，Large Language Models）如OpenAI的GPT-4中，Function Calling 是一种增强模型功能和交互能力的重要技术。这种技术允许语言模型在对话中调用特定的函数，以便执行特定的任务或获取外部数据。
 
