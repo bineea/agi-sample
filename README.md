@@ -60,3 +60,9 @@ RAG（Retrieval-Augmented Generation）是一种结合检索（Retrieval）和�
 
 ## AGENT
 ???
+
+
+### THINK
+结合rag，可以先通过rag找到对应的文件或数据？？？因为调用操作是LLM执行的，如何能把rag结合？
+agent_executor invoke 需要try catch捕捉异常
+如果允许LLM提问，比如LLM执行错误时，由人工来引导，怎么改造这个prompt；但是也可以不用提问，因为保留了短时记忆，由人工继续提问即可
