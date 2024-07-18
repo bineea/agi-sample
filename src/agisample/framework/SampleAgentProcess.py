@@ -31,6 +31,7 @@ tools = [multiply, add, exponentiate]
 
 llm = ChatOpenAI(model_name='gpt-3.5-turbo', temperature=0, model_kwargs={"seed":20})
 # llm = ChatOpenAI(model_name='gpt-4o', temperature=0, model_kwargs={"seed":20})
+# llm = ChatOpenAI(model_name='gpt-4o', temperature=0, model_kwargs={"seed":20}, streaming=True, callbacks=[StreamingStdOutCallbackHandler()])
 
 
 PROMPT = """You are an AI assistant that can use tools to answer questions. You have access to the following tools:
@@ -42,8 +43,8 @@ When answering a question, you should follow this process:
 1. Think about what the question is asking.
 2. Choose the appropriate tool to use.
 3. Parse the necessary integers from the question.
-4. Analyze the parameters required by the tool
-5. Use the tool with the parsed integers, When the tool has multiple parameters, it is necessary to map the parsed integers to different parameters separately
+4. Analyze the parameters needed for the chosen tool.
+5. Using integers obtained from question analysis as parameters for the selected tool, When a tool has multiple parameters, it is necessary to assign each integer obtained from parsing the question to a distinct parameter.
 6. Observe the result from the tool.
 7. Repeat if necessary to get the final answer.
 8. Provide the final answer.
@@ -53,7 +54,7 @@ Use the following format:
 Question: {input}
 Thought: What do I need to do to answer the question?
 Action: Which tool in [{tool_names}] to use and with what parameters.
-Action Input: The input parameters for the tool in the format: first_int, second_int or base, exponent. When the tool has multiple parameters, it is necessary to map the parsed integers to different parameters separately
+Action Input: Using integers obtained from question analysis as parameters for the selected tool, The input parameters for the tool in the format: first_int, second_int or base, exponent. When a tool has multiple parameters, it is necessary to assign each integer obtained from parsing the question to a distinct parameter.
 Observation: The result from the tool.
 ... (this Thought/Action/Action Input/Observation sequence can repeat N times if needed)
 Thought: What is the final answer?
@@ -82,8 +83,11 @@ agent = create_react_agent(llm, tools, PROMPT_TEMPLATE)
 agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True, handle_parsing_errors=True)
 
 try:
-    # 执行
+    # 执行，并直接输出最终结果
     result = agent_executor.invoke({"input": "1024的16倍是多少"})
     print(result)
+    # 执行，并流式输出
+    # for chunk in agent_executor.stream({"input": "1024的16倍是多少"}):
+    #     print(chunk, end="|", flush=True)
 except Exception as e:
     traceback.print_exc()
