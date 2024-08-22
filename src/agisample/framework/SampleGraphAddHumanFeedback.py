@@ -44,8 +44,8 @@ memory = MemorySaver()
 # Add
 graph = builder.compile(checkpointer=memory, interrupt_before=["human_feedback"])
 
-thread = {"configurable": {"thread_id": "1"}}
-for event in graph.stream({"input": "hello world"}, thread):
+config = {"configurable": {"thread_id": "1"}}
+for event in graph.stream({"input": "hello world"}, config, stream_mode="values"):
     print("第一个循环")
     print(event)
 
@@ -53,16 +53,16 @@ for event in graph.stream({"input": "hello world"}, thread):
 user_input = input("Tell me how you want to update the state: ")
 
 # We now update the state as if we are the human_feedback node
-graph.update_state(thread, {"input": user_input}, as_node="human_feedback")
+graph.update_state(config, {"user_feedback": user_input}, as_node="human_feedback")
 
-for event in graph.stream(None, thread):
-    print("第二个循环")
-    print(event)
-
-# 如何设定了stream_mode="values"，则只返回状态值,而不是完整的事件对象，同时因为状态值（即第一个参数）设置为None，所以状态值始终为空，导致event就是空
-# for event in graph.stream(None, thread, stream_mode="values"):
+# for event in graph.stream(None, config):
 #     print("第二个循环")
 #     print(event)
 
+# 如何设定了stream_mode="values"，则只返回状态值,而不是完整的事件对象，同时因为状态值（即第一个参数）设置为None，所以状态值始终为空，导致event就是空
+for event in graph.stream(None, config, stream_mode="values"):
+    print("第二个循环")
+    print(event)
 
 
+print(graph.get_state(config).values)
