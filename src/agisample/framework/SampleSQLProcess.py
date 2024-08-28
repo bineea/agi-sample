@@ -5,7 +5,8 @@ from vanna.openai import OpenAI_Chat
 
 _ = load_dotenv(find_dotenv())
 
-
+# vanna-ai地址：https://vanna.ai/docs/
+# vanna-ai方法文档：https://vanna.ai/docs/base/
 class MyVanna(ChromaDB_VectorStore, OpenAI_Chat):
     def __init__(self, config=None):
         ChromaDB_VectorStore.__init__(self, config=config)
