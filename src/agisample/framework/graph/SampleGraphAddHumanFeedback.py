@@ -86,3 +86,24 @@ for event in graph.stream(None, config_new, stream_mode="values"):
 
 print(graph.get_state(config).values)
 print(graph.get_state(config_new).values)
+
+
+config_new_again = {"configurable": {"thread_id": "2"}}
+# state中的数据通过config隔离
+for event in graph.stream(None, config_new_again, stream_mode="values"):
+    print("新-新-第一个循环")
+    print(event)
+
+# Get user input
+user_input_new = input("Tell me how you want to update the state: ")
+
+# We now update the state as if we are the human_feedback node
+graph.update_state(config_new_again, {"user_feedback": user_input_new}, as_node="human_feedback")
+
+for event in graph.stream(None, config_new_again, stream_mode="values"):
+    print("新-新-第二个循环")
+    print(event)
+
+print(graph.get_state(config).values)
+print(graph.get_state(config_new).values)
+print(graph.get_state(config_new_again).values)

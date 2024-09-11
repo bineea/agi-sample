@@ -3,6 +3,7 @@ from typing import TypedDict
 
 from dotenv import load_dotenv, find_dotenv
 from langchain_community.chat_models import ChatOpenAI
+from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import StateGraph, END
 
 _ = load_dotenv(find_dotenv())
@@ -77,11 +78,49 @@ workflow.add_conditional_edges("process_input",
                                    "N": "generate_question"
                                })
 
-
-graph = workflow.compile()
+memory = MemorySaver()
+graph = workflow.compile(checkpointer=memory)
 
 
 state = {"collected_info": {}, "current_field": None}
 config = {"configurable": {"thread_id": "1"}}
 for event in graph.stream(state, config, stream_mode="values"):
+    user_input = input("是否继续操作: ")
+    if user_input.lower() in ["quit", "exit", "q"]:
+        print("Goodbye!")
+        break
     print(event)
+print("--------------------------------")
+print(graph.get_state(config).values)
+
+state_new = {"collected_info": {}, "current_field": None}
+config_new = {"configurable": {"thread_id": "1_new"}}
+for event in graph.stream(state_new, config_new, stream_mode="values"):
+    user_input = input("是否继续操作: ")
+    if user_input.lower() in ["quit", "exit", "q"]:
+        print("Goodbye!")
+        break
+    print(event)
+
+print("--------------------------------")
+print(graph.get_state(config).values)
+
+print("--------------------------------")
+print(graph.get_state(config_new).values)
+
+config_new_again = {"configurable": {"thread_id": "1_new"}}
+for event in graph.stream(None, config_new_again, stream_mode="values"):
+    user_input = input("是否继续操作: ")
+    if user_input.lower() in ["quit", "exit", "q"]:
+        print("Goodbye!")
+        break
+    print(event)
+
+print("--------------------------------")
+print(graph.get_state(config).values)
+
+print("--------------------------------")
+print(graph.get_state(config_new).values)
+
+print("--------------------------------")
+print(graph.get_state(config_new_again).values)
