@@ -59,10 +59,30 @@ graph.update_state(config, {"user_feedback": user_input}, as_node="human_feedbac
 #     print("第二个循环")
 #     print(event)
 
-# 如何设定了stream_mode="values"，则只返回状态值,而不是完整的事件对象，同时因为状态值（即第一个参数）设置为None，所以状态值始终为空，导致event就是空
+# 如果设定了stream_mode="values"，则只返回状态值,而不是完整的事件对象，同时因为状态值（即第一个参数）设置为None，所以状态值始终为空，导致event就是空
 for event in graph.stream(None, config, stream_mode="values"):
     print("第二个循环")
     print(event)
 
 
 print(graph.get_state(config).values)
+
+# state中的数据通过config隔离
+config_new = {"configurable": {"thread_id": "2"}}
+for event in graph.stream({"input": "hello world"}, config_new, stream_mode="values"):
+    print("新-第一个循环")
+    print(event)
+
+# Get user input
+user_input_new = input("Tell me how you want to update the state: ")
+
+# We now update the state as if we are the human_feedback node
+graph.update_state(config_new, {"user_feedback": user_input_new}, as_node="human_feedback")
+
+for event in graph.stream(None, config_new, stream_mode="values"):
+    print("新-第二个循环")
+    print(event)
+
+
+print(graph.get_state(config).values)
+print(graph.get_state(config_new).values)
