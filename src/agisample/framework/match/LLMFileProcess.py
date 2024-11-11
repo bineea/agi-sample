@@ -1,8 +1,12 @@
 import base64
+from io import BytesIO
+
+import fitz
 import os
 import time
 from mimetypes import guess_type
 
+from PIL import Image
 from dotenv import load_dotenv, find_dotenv
 from openai import OpenAI, AzureOpenAI
 
@@ -21,6 +25,26 @@ client = AzureOpenAI(
 
 
 class HandleImgProcess:
+
+    def pdf_to_image(self):
+        # 打开 PDF 文件
+        doc = fitz.open("E:\document\CASH相关\Remittance文件/AU02-Telstra Limited Remit. Adv 2001293255.pdf")
+        # 获取第一页
+        page = doc.load_page(0)
+        # 提取图像
+        pix = page.get_pixmap(dpi=200)
+
+        # 保存图像
+        pix.save("page_image.png")
+
+        # 将图像转换为 PIL 图像对象
+        image = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+        # 将 PIL 图像对象转换为字节流
+        buffered = BytesIO()
+        image.save(buffered, format="PNG")
+        # 将字节流转换为 base64 编码的字符串
+        img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
+        print(img_str)
 
     # Function to encode a local image into data URL
     def local_image_to_data_url(image_path):
