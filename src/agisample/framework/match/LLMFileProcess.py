@@ -3,17 +3,23 @@ from io import BytesIO
 from pathlib import Path
 from typing import Type
 
+import camelot
 import fitz
 import os
 import time
 from mimetypes import guess_type
 
+import pdfplumber
+import pymupdf4llm
 from PIL import Image
 from dotenv import load_dotenv, find_dotenv
 from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
-from langchain_openai import OpenAIEmbeddings
+from langchain_core.messages import SystemMessage
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder, HumanMessagePromptTemplate, \
+    SystemMessagePromptTemplate
+from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from openai import OpenAI, AzureOpenAI
 
@@ -37,7 +43,7 @@ class HandleImgProcess:
 
     def pdf_to_image(self) -> str:
         # 打开 PDF 文件
-        doc = fitz.open("E:\document\CASH相关\Remittance文件\AU02-Telstra Limited Remit. Adv 2001293255.pdf")
+        doc = fitz.open(os.path.join(Path(__file__).resolve().parents[4], "docs", "MY01-2701964.pdf"))
         # 获取第一页
         page = doc.load_page(0)
         # 提取图像
@@ -200,11 +206,11 @@ class RemittanceDataVectorManager:
 
 
 class HandleFileVectorStoreProcess:
-    def init_data(self):
-        pdf_loader = PyMuPDFLoader(os.path.join(Path(__file__).resolve().parents[4], "docs", "AU02-Telstra Limited Remit. Adv 2001293255.pdf"))
+    def init_data_by_pymupdf(self):
+        pdf_loader = PyMuPDFLoader(os.path.join(Path(__file__).resolve().parents[4], "docs", "MY01-2701964.pdf"))
         pages = pdf_loader.load_and_split()
         text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=200,
+            chunk_size=1000,
             chunk_overlap=100,
             length_function=len,
             add_start_index=True,
@@ -213,13 +219,300 @@ class HandleFileVectorStoreProcess:
             [page.page_content for page in pages[:10]]
         )
 
-        RemittanceDataVectorManager().save(split_docs)
+        print([page.page_content for page in pages[:10]])
+        return pages[0].page_content
+        # print(split_docs)
+        # RemittanceDataVectorManager().save(split_docs)
+
+    # 使用pymupdf4llm的to_markdown方法，因为没有保留制表符，可能会导致LLM理解错误
+    def init_data_by_pymupdf4llm(self):
+        pages = pymupdf4llm.to_markdown(os.path.join(Path(__file__).resolve().parents[4], "docs", "MY01-2701964.pdf"), margins=(0, 0, 0, 0), page_chunks=True, pages=[0])
+        all_page_content = []
+        for page in pages:
+            page_metadata = page["metadata"]
+            page_content = page["text"]
+            doc = Document(page_content=page_content, metadata={"file_name": page_metadata["file_path"], "page_count": page_metadata["page_count"], "page_number": page_metadata["page"]})
+            print(doc)
+            all_page_content.append(doc)
+            # RemittanceDataVectorManager().save(doc)
+        return all_page_content
+
+    def init_data_by_pdfplumber(self):
+        with pdfplumber.open(os.path.join(Path(__file__).resolve().parents[4], "docs", "Payment Summary.PDF")) as pdf:
+            page = pdf.pages[0]
+
+            # 设置表格提取参数
+            table_settings = {
+                "vertical_strategy": "text",  # 基于文本对齐检测垂直线
+                "horizontal_strategy": "text",  # 基于文本对齐检测水平线
+                "intersection_y_tolerance": 10,  # 调整行间距容差
+                "join_tolerance": 10,  # 调整列合并容差
+                "edge_min_length": 3,  # 最小边缘长度
+                "min_words_vertical": 10,  # 最小垂直文字数
+                "text_y_tolerance": 2,  # 降低到2
+                "text_x_tolerance": 2,  # 添加水平文本容差
+                "snap_tolerance": 2,  # 添加对齐容差
+            }
+            # 提取表格
+            table = page.extract_table(table_settings)
+            if not table:
+                return None
+            result_table = []
+            for row in table:
+                all_cell_is_blank = True
+                for cell in row:
+                    if len(cell.strip()) > 0:
+                        all_cell_is_blank = False
+                        break
+
+                if all_cell_is_blank == False:
+                    result_table.append(row)
+            print(result_table)
+            # if table:
+            #     df = pd.DataFrame(table[1:], columns=table[0])
+            #     # 合并跨行的Your document列
+            #     df['Your document'] = df['Your document'].apply(
+            #         lambda x: ' '.join(x.split()) if pd.notnull(x) else ''
+            #     )
+            #     return df
+            return result_table
+
+    def init_data_by_camelot(self):
+        tables = camelot.read_pdf(
+            os.path.join(Path(__file__).resolve().parents[4], "docs", "Payment Summary.PDF"),
+            pages=str(1),
+            flavor='stream',  # stream模式更适合没有边框的表格
+            split_text=True,  # 处理跨行文本
+            row_tol=10  # 调整行容差
+        )
+        for table in tables:
+            print(table.df)
+
+
+class HandleFileAssistant:
+    HANDLE_FILE_ASSISTANT_PROMPT = ChatPromptTemplate.from_messages(
+        [
+            (
+                "system"
+                """
+                你是客户付款数据解析和理解的专业助手。
+                解析并理解客户付款数据: {payment_content}，整理为json格式。
+                
+                注意事项:
+                - 如果某一列数据因长度超长导致换行，请将换行部分合并到同一行数据。
+                - 列数据的完整性由前后逻辑判断。
+                - 避免编造或猜测任何信息。
+                - 避免任何数据计算。
+                - 只返回最终结果，不需要返回中间过程。
+                
+                示例：
+                示例1：
+                客户付款数据:  ['DocType', 'Docu', 'ment', 'Yourdocument', 'Date', 'Grossa', 'mount'], ['RE', '62047', '80', 'H121006016', '14.08.2024', '2,095.10', 'MYR'], ['', '', '', '8400109550', '', '', '']
+                助手:
+                {{
+                    "total_payment": ,
+                    "payment_reference_number": ,
+                    "related_order_reference_number": "H1210060168400109550"
+                }}
+                """
+            )
+        ]
+    )
+
+    # HANDLE_FILE_ASSISTANT_PROMPT = ChatPromptTemplate.from_messages(
+    #     [
+    #         # (
+    #         #     "system",
+    #         #     """
+    #         #     你是客户付款数据解析和理解的专业助手。
+    #         #     解析并理解客户付款数据: {content}，将付款参考编号(payment_reference_number)和付款总金额(total_payment)和付款关联的订单参考编号(related_order_reference_number)整理为json格式。
+    #         #     每个单子的付款总金额
+    #         #
+    #         #     注意事项:
+    #         #     - 避免编造或猜测任何信息。
+    #         #     - 避免任何数据计算。
+    #         #     - 只返回最终结果，不需要返回中间过程。
+    #         #     """,
+    #         # ),
+    #         # ("placeholder", "{messages}"),
+    #
+    #         (
+    #             "system",
+    #             """
+    #             你是客户付款数据解析和理解的专业助手，根据客户付款数据提取指定的字段（例如“付款数据总金额(total_payment_amount)”、“付款参考编号(payment_reference_number)”等）以及对应的数值。如果没有明确对应的字段，不能根据其他数据推测或计算。
+    #             处理步骤:
+    #             1. 解析并理解客户付款数据: {content}；
+    #             2. 部分内容因长度超出而换行，请将因为换行被拆分的内容合并为完整的值；
+    #             3. 列数据的完整性由前后逻辑判断；
+    #             2. 解析与付款数据总金额(total_payment_amount)匹配程度超过60%的数据，否则银行付款数据总金额(total_payment_amount)对应数据设置为空；
+    #             3. 解析与付款参考编号(payment_reference_number)匹配程度超过60%的数据，否则银行付款数据总金额(payment_reference_number)对应数据设置为空；
+    #             4. 解析与关联订单参考编号(related_order_reference_number)匹配程度超过60%的数据，否则关联订单参考编号(related_order_reference_number)对应数据设置为空；
+    #             4. 解析与关联订单其他编号(related_order_other_number)匹配程度超过60%的数据，否则关联订单参考编号(related_order_other_number)对应数据设置为空；
+    #             5. 解析与关联订单订单金额(related_order_amount)，匹配程度超过60%的数据，否则关联订单订单金额(related_order_amount)对应数据设置为空；
+    #             6. 解析与关联订单支付金额(related_order_payment_amount)匹配程度超过60%的数据，否则关联订单支付金额(related_order_payment_amount)对应数据设置为空；
+    #             7. 解析与关联订单扣税金额(related_order_tax_amount)匹配程度超过60%的数据，否则关联订单扣税金额(related_order_tax_amount)对应数据设置为空；
+    #             7. 解析所有可能的参考编号(possible_reference_number)；
+    #             8. 将付款数据总金额(total_payment_amount)、关联订单参考编号(related_order_reference_number)、关联订单订单金额(related_order_amount)、关联订单支付金额(related_order_payment_amount)、关联订单扣税金额(related_order_tax_amount)、参考编号(possible_reference_number)的数据整理并格式化为json格式。
+    #
+    #             注意事项:
+    #             - 部分内容因长度超出而换行，请将因为换行被拆分的内容合并为完整的值，
+    #             - 如果内容属于同一列或行，请保持它们的上下文一致性，
+    #             - 严格禁止编造或猜测任何数据和信息，
+    #             - 严格禁止任何数学运算，
+    #             - 严格禁止任何数据推测，
+    #             请始终遵循以上指引。
+    #
+    #             示例：
+    #             示例1：
+    #             客户付款数据:
+    #             助手:
+    #             {{
+    #                 "total_payment_amount": 100,
+    #                 "payment_reference_number": "payment_reference_number",
+    #                 "related_orders": [
+    #                     {{
+    #                         "related_order_reference_number": "related_order_reference_number",
+    #                         "related_order_other_number": "related_order_other_number",
+    #                         "related_order_amount": 50,
+    #                         "related_order_payment_amount": 40,
+    #                         "related_order_tax_amount": 10,
+    #                     }}
+    #                 ],
+    #                 "possible_reference_number": ["123","abc"]
+    #             }}
+    #             """,
+    #         ),
+    #     ]
+    # )
+
+    HANDLE_FILE_WITH_IMAGE_ASSISTANT_PROMPT = ChatPromptTemplate.from_messages(
+        [
+            SystemMessage(
+                """
+                你是一个专业表格图片解析助手
+                1. 如果某一列数据因长度超长导致换行，请将换行部分合并到同一行数据，
+                2. 列数据的完整性由前后逻辑判断，比如在“Your document”列中，H121006016 和 8400109550 应合并为同一行，
+                3. 表格应包含以下列：Doc Type、Document、Your document、Date、Gross Amount、Currency。
+                """
+            ),
+            HumanMessagePromptTemplate.from_template(
+                template = [
+                    {
+                        "type": "text",
+                        "text": "根据图片信息，将单元格中因为长度超出导致换行被拆分的内容合并为完整的值，重新整理为表格形式输出，图片: "
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": "data:image/jpeg;base64,{payment_image}"
+                        }
+                    }
+                ]
+            )
+        ]
+    )
+
+    # HANDLE_FILE_WITH_IMAGE_ASSISTANT_PROMPT = ChatPromptTemplate.from_messages(
+    #     [
+    #         SystemMessage(
+    #             content=
+    #             """
+    #             你是客户付款数据解析和理解的专业助手，根据客户付款数据提取指定的字段（例如“付款数据总金额(total_payment_amount)”、“付款参考编号(payment_reference_number)”等）以及对应的数值。如果没有明确对应的字段，不能根据其他数据推测或计算。
+    #
+    #             处理步骤:
+    #             1. 解析并理解客户付款数据；
+    #             2. 部分内容因长度超出而换行，请将因为换行被拆分的内容合并为完整的值；
+    #             2. 解析与付款数据总金额(total_payment_amount)匹配程度超过60%的数据，否则银行付款数据总金额(total_payment_amount)对应数据设置为空；
+    #             3. 解析与付款参考编号(payment_reference_number)匹配程度超过60%的数据，否则银行付款数据总金额(payment_reference_number)对应数据设置为空；
+    #             4. 解析与关联订单参考编号(related_order_reference_number)匹配程度超过60%的数据，否则关联订单参考编号(related_order_reference_number)对应数据设置为空；
+    #             4. 解析与关联订单其他编号(related_order_other_number)匹配程度超过60%的数据，否则关联订单参考编号(related_order_other_number)对应数据设置为空；
+    #             5. 解析与关联订单订单金额(related_order_amount)，匹配程度超过60%的数据，否则关联订单订单金额(related_order_amount)对应数据设置为空；
+    #             6. 解析与关联订单支付金额(related_order_payment_amount)匹配程度超过60%的数据，否则关联订单支付金额(related_order_payment_amount)对应数据设置为空；
+    #             7. 解析与关联订单扣税金额(related_order_tax_amount)匹配程度超过60%的数据，否则关联订单扣税金额(related_order_tax_amount)对应数据设置为空；
+    #             7. 解析所有可能的参考编号(possible_reference_number)；
+    #             8. 将付款数据总金额(total_payment_amount)、关联订单参考编号(related_order_reference_number)、关联订单订单金额(related_order_amount)、关联订单支付金额(related_order_payment_amount)、关联订单扣税金额(related_order_tax_amount)、参考编号(possible_reference_number)的数据整理并格式化为json格式。
+    #
+    #             注意事项:
+    #             - 部分内容因长度超出而换行，请将因为换行被拆分的内容合并为完整的值，
+    #             - 如果内容属于同一列或行，请保持它们的上下文一致性，
+    #             - 严格禁止编造或猜测任何数据和信息，
+    #             - 严格禁止任何数学运算，
+    #             - 严格禁止任何数据推测，
+    #             请始终遵循以上指引。
+    #
+    #             示例：
+    #             示例1：
+    #             助手:
+    #             {{
+    #                 "total_payment_amount": 100,
+    #                 "payment_reference_number": "payment_reference_number",
+    #                 "related_orders": [
+    #                     {{
+    #                         "related_order_reference_number": "related_order_reference_number",
+    #                         "related_order_other_number": "related_order_other_number",
+    #                         "related_order_amount": 50,
+    #                         "related_order_payment_amount": 40,
+    #                         "related_order_tax_amount": 10,
+    #                     }}
+    #                 ],
+    #                 "possible_reference_number": ["123","abc"]
+    #             }}
+    #             """
+    #         ),
+    #         HumanMessagePromptTemplate.from_template(
+    #             template = [
+    #                 {
+    #                     "type": "text",
+    #                     "text": "客户付款数据: {payment_content}；根据图片信息，将因为长度超出导致换行被拆分的内容合并为完整的值，图片: "
+    #                 },
+    #                 {
+    #                     "type": "image_url",
+    #                     "image_url": {
+    #                         "url": "data:image/jpeg;base64,{payment_image}"
+    #                     }
+    #                 }
+    #             ]
+    #         )
+    #     ]
+    # )
+
+    def invoke(self, content: str):
+        llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.5)
+        runnable = HandleFileAssistant.HANDLE_FILE_ASSISTANT_PROMPT | llm
+        result = runnable.invoke(
+            {
+                "payment_content": content
+            }
+        )
+        print(result)
+
+    def invoke_with_image(self, content: str, image: str):
+        llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.5)
+        runnable = HandleFileAssistant.HANDLE_FILE_WITH_IMAGE_ASSISTANT_PROMPT | llm
+        result = runnable.invoke(
+            {
+                "payment_content": content,
+                "payment_image": image
+            }
+        )
+        print(result)
 
 
 if __name__ == '__main__':
     # 图像处理
     # image_data = HandleImgProcess().pdf_to_image()
     # print(HandleImgProcess().handle(image_data))
-    # 向量处理
-    HandleFileVectorStoreProcess().init_data()
-    print(RemittanceDataVectorManager().search("2001293255"))
+
+    all_page_content = HandleFileVectorStoreProcess().init_data_by_pymupdf()
+    # print(HandleFileAssistant().invoke_with_image(all_page_content, image_data))
+
+    all_page_content = HandleFileVectorStoreProcess().init_data_by_pymupdf4llm()
+    # print(HandleFileAssistant().invoke(all_page_content[0].page_content))
+
+    all_page_content = HandleFileVectorStoreProcess().init_data_by_pdfplumber()
+    # print(HandleFileAssistant().invoke(all_page_content))
+
+    # HandleFileVectorStoreProcess().init_data_by_camelot()
+
+
+
