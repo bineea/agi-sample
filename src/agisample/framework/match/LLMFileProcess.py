@@ -4,11 +4,13 @@ from pathlib import Path
 from typing import Type
 
 import camelot
+import cv2
 import fitz
 import os
 import time
 from mimetypes import guess_type
 
+import layoutparser
 import pdfplumber
 import pymupdf4llm
 from PIL import Image
@@ -22,6 +24,7 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder, Huma
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from openai import OpenAI, AzureOpenAI
+from unstructured.partition.auto import partition
 
 _ = load_dotenv(find_dotenv())
 
@@ -75,6 +78,17 @@ class HandleImgProcess:
 
         # Construct the data URL
         return f"data:{mime_type};base64,{base64_encoded_data}"
+
+    def read_image(self, image_path: str):
+        if image_path is None or len(image_path.strip()) == 0:
+            image_path = os.path.join(Path(__file__).resolve().parents[4], "docs", "page_image.png")
+        image = cv2.imread(image_path)
+        image = image[..., ::-1]
+        model = layoutparser.PaddleDetectionLayoutModel('lp://PubLayNet/faster_rcnn_R_50_FPN_3x/config',
+                                         extra_config=["MODEL.ROI_HEADS.SCORE_THRESH_TEST", 0.8],
+                                         label_map={0: "Text", 1: "Title", 2: "List", 3: "Table", 4: "Figure"})
+        layout = model.detect(image)
+        layoutparser.draw_box(image, layout, box_width=3)
 
     def handle(self, image_data):
         response = client.chat.completions.create(
@@ -287,6 +301,11 @@ class HandleFileVectorStoreProcess:
         )
         for table in tables:
             print(table.df)
+
+    def init_data_by_unstructured(self):
+        file_path = os.path.join(Path(__file__).resolve().parents[4], "docs", "MY01-2701964.pdf")
+        elements = partition(file_path)
+        print("\n\n".join([str(el) for el in elements]))
 
 
 class HandleFileAssistant:
@@ -501,18 +520,21 @@ class HandleFileAssistant:
 if __name__ == '__main__':
     # 图像处理
     # image_data = HandleImgProcess().pdf_to_image()
+    # HandleImgProcess().read_image(None)
     # print(HandleImgProcess().handle(image_data))
 
-    all_page_content = HandleFileVectorStoreProcess().init_data_by_pymupdf()
+    # all_page_content = HandleFileVectorStoreProcess().init_data_by_pymupdf()
     # print(HandleFileAssistant().invoke_with_image(all_page_content, image_data))
 
-    all_page_content = HandleFileVectorStoreProcess().init_data_by_pymupdf4llm()
+    # all_page_content = HandleFileVectorStoreProcess().init_data_by_pymupdf4llm()
     # print(HandleFileAssistant().invoke(all_page_content[0].page_content))
 
-    all_page_content = HandleFileVectorStoreProcess().init_data_by_pdfplumber()
+    # all_page_content = HandleFileVectorStoreProcess().init_data_by_pdfplumber()
     # print(HandleFileAssistant().invoke(all_page_content))
 
     # HandleFileVectorStoreProcess().init_data_by_camelot()
+
+    HandleFileVectorStoreProcess().init_data_by_unstructured()
 
 
 
