@@ -23,11 +23,20 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder, Huma
     SystemMessagePromptTemplate
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from layoutparser.elements import Layout
+from layoutparser.models import PaddleDetectionLayoutModel
+from layoutparser.visualization import draw_box
 from openai import OpenAI, AzureOpenAI
+from paddleocr import PaddleOCR, PPStructure
+from paddleocr.ppstructure.predict_system import save_structure_res
+from paddleocr.ppstructure.recovery.recovery_to_doc import sorted_layout_boxes
 from unstructured.partition.auto import partition
+
+from agisample.framework.match.recovery_to_markdown import convert_info_markdown
 
 _ = load_dotenv(find_dotenv())
 
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 client = OpenAI(
     api_key=os.getenv("OPENAI_API_KEY"),
@@ -81,14 +90,47 @@ class HandleImgProcess:
 
     def read_image(self, image_path: str):
         if image_path is None or len(image_path.strip()) == 0:
-            image_path = os.path.join(Path(__file__).resolve().parents[4], "docs", "page_image.png")
+            image_path = os.path.join(Path(__file__).resolve().parents[4], "docs", "page_image.jpg")
         image = cv2.imread(image_path)
         image = image[..., ::-1]
-        model = layoutparser.PaddleDetectionLayoutModel('lp://PubLayNet/faster_rcnn_R_50_FPN_3x/config',
-                                         extra_config=["MODEL.ROI_HEADS.SCORE_THRESH_TEST", 0.8],
-                                         label_map={0: "Text", 1: "Title", 2: "List", 3: "Table", 4: "Figure"})
+        print(layoutparser.is_paddle_available())
+        # model = PaddleDetectionLayoutModel('lp://PubLayNet/ppyolov2_r50vd_dcn_365e/config',
+        #                                    extra_config={"threshold": 0.3},
+        #                                    device='cpu',
+        #                                    label_map={0: "Text", 1: "Title", 2: "List", 3: "Table", 4: "Figure"})
+        model = PaddleDetectionLayoutModel('lp://TableBank/ppyolov2_r50vd_dcn_365e/config',
+                                           extra_config={"threshold": 0.2},
+                                           device='cpu',
+                                           label_map={0: "Table"})
         layout = model.detect(image)
-        layoutparser.draw_box(image, layout, box_width=3)
+        # text_blocks = Layout([b for b in layout if b.type == 'Text'])
+        # for txt in text_blocks.get_texts():
+        #     print(txt, end='\n***\n')
+        table_blocks = Layout([b for b in layout if b.type == 'Table'])
+        for txt in table_blocks.get_texts():
+            print(txt, end='\n---\n')
+        draw_box(image, layout, box_width=3).show()
+
+        paddleocr = PaddleOCR(lang='en', show_log=True)
+        img = cv2.imread(image_path)  # 打开需要识别的图片
+        result = paddleocr.ocr(img)
+        for i in range(len(result[0])):
+            print(result[0][i][1][0])  # 输出识别结果
+
+        table_engine = PPStructure(recovery=True, lang='en')
+
+        save_folder = os.path.join(Path(__file__).resolve().parents[4], "docs", "")
+        img = cv2.imread(image_path)
+        result = table_engine(img)
+        save_structure_res(result, save_folder, os.path.basename(image_path).split('.')[0])
+
+        for line in result:
+            line.pop('img')
+            print(line)
+
+        h, w, _ = img.shape
+        res = sorted_layout_boxes(result, w)
+        convert_info_markdown(res, save_folder, os.path.basename(image_path).split('.'))
 
     def handle(self, image_data):
         response = client.chat.completions.create(
@@ -307,6 +349,7 @@ class HandleFileVectorStoreProcess:
         elements = partition(file_path)
         print("\n\n".join([str(el) for el in elements]))
 
+    # def init_data_by_marker
 
 class HandleFileAssistant:
     HANDLE_FILE_ASSISTANT_PROMPT = ChatPromptTemplate.from_messages(
@@ -534,7 +577,7 @@ if __name__ == '__main__':
 
     # HandleFileVectorStoreProcess().init_data_by_camelot()
 
-    HandleFileVectorStoreProcess().init_data_by_unstructured()
+    # HandleFileVectorStoreProcess().init_data_by_unstructured()
 
 
 
