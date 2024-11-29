@@ -1,6 +1,7 @@
 import base64
 from io import BytesIO
 from pathlib import Path
+from pprint import pprint
 from typing import Type
 
 import camelot
@@ -27,10 +28,12 @@ from layoutparser.elements import Layout
 from layoutparser.models import PaddleDetectionLayoutModel
 from layoutparser.visualization import draw_box
 from openai import OpenAI, AzureOpenAI
+from paddlenlp import Taskflow
 from paddleocr import PaddleOCR, PPStructure
 from paddleocr.ppstructure.predict_system import save_structure_res
 from paddleocr.ppstructure.recovery.recovery_to_doc import sorted_layout_boxes
 from unstructured.partition.auto import partition
+from unstructured.partition.pdf import partition_pdf
 
 from agisample.framework.match.recovery_to_markdown import convert_info_markdown
 
@@ -68,7 +71,7 @@ class HandleImgProcess:
         image = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
         # 将 PIL 图像对象转换为字节流
         buffered = BytesIO()
-        image.save(buffered, format="PNG")
+        image.save(buffered, format="JPEG")
         # 将字节流转换为 base64 编码的字符串
         img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
         # print(img_str)
@@ -131,6 +134,11 @@ class HandleImgProcess:
         h, w, _ = img.shape
         res = sorted_layout_boxes(result, w)
         convert_info_markdown(res, save_folder, os.path.basename(image_path).split('.'))
+
+        schema = ["document","your document","date","gross amount","currency","reference number"]
+        task_flow = Taskflow("information_extraction", schema=schema, model="uie-x-base")
+        # task_flow = Taskflow("information_extraction", schema=schema, model="uie-x-base", layout_analysis=True)
+        pprint(task_flow({"doc": image_path}))
 
     def handle(self, image_data):
         response = client.chat.completions.create(
@@ -282,7 +290,7 @@ class HandleFileVectorStoreProcess:
 
     # 使用pymupdf4llm的to_markdown方法，因为没有保留制表符，可能会导致LLM理解错误
     def init_data_by_pymupdf4llm(self):
-        pages = pymupdf4llm.to_markdown(os.path.join(Path(__file__).resolve().parents[4], "docs", "MY01-2701964.pdf"), margins=(0, 0, 0, 0), page_chunks=True, pages=[0])
+        pages = pymupdf4llm.to_markdown(os.path.join(Path(__file__).resolve().parents[4], "docs", "Payment Summary.PDF"), margins=(0, 0, 0, 0), page_chunks=True, pages=[0])
         all_page_content = []
         for page in pages:
             page_metadata = page["metadata"]
@@ -294,7 +302,7 @@ class HandleFileVectorStoreProcess:
         return all_page_content
 
     def init_data_by_pdfplumber(self):
-        with pdfplumber.open(os.path.join(Path(__file__).resolve().parents[4], "docs", "Payment Summary.PDF")) as pdf:
+        with pdfplumber.open(os.path.join(Path(__file__).resolve().parents[4], "docs", "MY01-2701964.pdf")) as pdf:
             page = pdf.pages[0]
 
             # 设置表格提取参数
@@ -310,7 +318,9 @@ class HandleFileVectorStoreProcess:
                 "snap_tolerance": 2,  # 添加对齐容差
             }
             # 提取表格
-            table = page.extract_table(table_settings)
+            # table = page.extract_table(table_settings)
+            print(page.extract_text())
+            table = page.extract_table()
             if not table:
                 return None
             result_table = []
@@ -335,7 +345,7 @@ class HandleFileVectorStoreProcess:
 
     def init_data_by_camelot(self):
         tables = camelot.read_pdf(
-            os.path.join(Path(__file__).resolve().parents[4], "docs", "Payment Summary.PDF"),
+            os.path.join(Path(__file__).resolve().parents[4], "docs", "MY01-2701964.pdf"),
             pages=str(1),
             flavor='stream',  # stream模式更适合没有边框的表格
             split_text=True,  # 处理跨行文本
@@ -347,6 +357,7 @@ class HandleFileVectorStoreProcess:
     def init_data_by_unstructured(self):
         file_path = os.path.join(Path(__file__).resolve().parents[4], "docs", "MY01-2701964.pdf")
         elements = partition(file_path)
+        # elements = partition_pdf(file_path)
         print("\n\n".join([str(el) for el in elements]))
 
     # def init_data_by_marker
@@ -563,7 +574,7 @@ class HandleFileAssistant:
 if __name__ == '__main__':
     # 图像处理
     # image_data = HandleImgProcess().pdf_to_image()
-    # HandleImgProcess().read_image(None)
+    HandleImgProcess().read_image(None)
     # print(HandleImgProcess().handle(image_data))
 
     # all_page_content = HandleFileVectorStoreProcess().init_data_by_pymupdf()
