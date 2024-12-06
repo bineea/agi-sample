@@ -468,6 +468,7 @@ class HandleFileAssistant:
                 3. 表格应包含以下列：Doc Type、Document、Your document、Date、Gross Amount、Currency。
                 """
             ),
+            # SystemMessagePromptTemplate.from_template(),
             HumanMessagePromptTemplate.from_template(
                 template = [
                     {
