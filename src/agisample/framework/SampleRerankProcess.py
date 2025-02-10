@@ -1,5 +1,11 @@
+
+
+#  rerank更关注的是文档的相关性，而不是文档的内容相似度。所以与payment_reference_code更相关的是invoice no，而不是reference number
+
+
 import cohere
 import yaml
+
 
 co = cohere.ClientV2(api_key="")
 
@@ -62,43 +68,50 @@ co = cohere.ClientV2(api_key="")
 
 
 documents = [
-    {
-        "paymentCustomerName": {
-            "sourceField": None,
-            "value": None
-        },
-        "paymentNote": {
-            "sourceField": "Reference Number",
-            "value": "RV240207021"
-        },
-        "paymentDate": {
-            "sourceField": None,
-            "value": "12.11.2024"
-        },
-        "paymentAmount": {
-            "sourceField": "Total",
-            "value": "158,765,479.00"
-        }
-    },
-    {
-        "paymentCustomerName": {
-            "sourceField": None,
-            "value": None
-        },
-        "paymentNote": {
-            "sourceField": "Reference Number",
-            "value": "5111156235"
-        },
-        "paymentDate": {
-            "sourceField": None,
-            "value": "12.11.2024"
-        },
-        "paymentAmount": {
-            "sourceField": "Payment amt",
-            "value": "158,765,479.00"
-        }
-    }
+    "None-None#Reference Number-RV240207021#Date-12.11.2024#Total-158,765,479.00",
+    "None-None#Invoice No-RV240207021#Date-12.11.2024#Total-158,765,479.00",
+    "None-None#Reference Number-5111156235#None-12.11.2024#Payment amt-158,765,479.00",
 ]
+
+
+# documents = [
+#     {
+#         "paymentCustomerName": {
+#             "sourceField": None,
+#             "value": None
+#         },
+#         "paymentNote": {
+#             "sourceField": "Reference Number",
+#             "value": "RV240207021"
+#         },
+#         "paymentDate": {
+#             "sourceField": None,
+#             "value": "12.11.2024"
+#         },
+#         "paymentAmount": {
+#             "sourceField": "Total",
+#             "value": "158,765,479.00"
+#         }
+#     },
+#     {
+#         "paymentCustomerName": {
+#             "sourceField": None,
+#             "value": None
+#         },
+#         "paymentNote": {
+#             "sourceField": "Reference Number",
+#             "value": "5111156235"
+#         },
+#         "paymentDate": {
+#             "sourceField": None,
+#             "value": "12.11.2024"
+#         },
+#         "paymentAmount": {
+#             "sourceField": "Payment amt",
+#             "value": "158,765,479.00"
+#         }
+#     }
+# ]
 
 
 # Define the documents
@@ -129,13 +142,14 @@ documents = [
 
 # Convert the documents to YAML format
 
-yaml_docs = [yaml.dump(doc, sort_keys=False) for doc in documents]
-
-print(yaml_docs, end="\n---------------------------\n")
+# yaml_docs = [yaml.dump(doc, sort_keys=False) for doc in documents]
+#
+# print(yaml_docs, end="\n---------------------------\n")
 
 # Add the user query
 
-query = "paymentNote:\n  sourceField: Reference Number\n  value: '4000058247'\npaymentAmount:\n  sourceField: Payment amt\n  value: 158,765,479.00\npaymentDate:\n  sourceField: null\n  value: 12.11.2024\n"
+# query = "None-None#Reference Number-4000058247#None-12.11.2024#Payment amt-158,765,479.00"
+query = "payment_reference_code:\n  sourceField: Reference Number\n  value: '4000058247'\payment_amount:\n  sourceField: Payment amt\n  value: 158,765,479.00\npayment_date:\n  sourceField: null\n  value: 12.11.2024\n"
 # query = "Reference Number: 4000058247"
 
 # query = "Reference Number-4000058247"
@@ -149,7 +163,7 @@ query = "paymentNote:\n  sourceField: Reference Number\n  value: '4000058247'\np
 results = co.rerank(
     model="rerank-v3.5",
     query=query,
-    documents=yaml_docs,
+    documents=documents,
     top_n=4,
 )
 
