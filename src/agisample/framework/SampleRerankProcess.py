@@ -76,7 +76,7 @@ documents = [
             "value": "12.11.2024"
         },
         "paymentAmount": {
-            "sourceField": "Payment amt",
+            "sourceField": "Total",
             "value": "158,765,479.00"
         }
     },
