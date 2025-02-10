@@ -27,6 +27,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from layoutparser.elements import Layout
 from layoutparser.models import PaddleDetectionLayoutModel
 from layoutparser.visualization import draw_box
+from markitdown import MarkItDown
 from openai import OpenAI, AzureOpenAI
 from paddlenlp import Taskflow
 from paddleocr import PaddleOCR, PPStructure
@@ -362,6 +363,12 @@ class HandleFileVectorStoreProcess:
 
     # def init_data_by_marker
 
+    def init_data_by_markitdown(self):
+        file_path = os.path.join(Path(__file__).resolve().parents[4], "docs", "MY01-2701964.pdf")
+        md = MarkItDown()
+        result = md.convert(file_path)
+        print(result.text_content)
+
 class HandleFileAssistant:
     HANDLE_FILE_ASSISTANT_PROMPT = ChatPromptTemplate.from_messages(
         [
@@ -575,7 +582,7 @@ class HandleFileAssistant:
 if __name__ == '__main__':
     # 图像处理
     # image_data = HandleImgProcess().pdf_to_image()
-    HandleImgProcess().read_image(None)
+    # HandleImgProcess().read_image(None)
     # print(HandleImgProcess().handle(image_data))
 
     # all_page_content = HandleFileVectorStoreProcess().init_data_by_pymupdf()
@@ -591,5 +598,8 @@ if __name__ == '__main__':
 
     # HandleFileVectorStoreProcess().init_data_by_unstructured()
 
+    # HandleFileVectorStoreProcess().init_data_by_markitdown()
+
+    print("Done", end="----------------\n")
 
 
