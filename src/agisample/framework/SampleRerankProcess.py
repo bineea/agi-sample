@@ -25,6 +25,8 @@ class CohereRerankProcess:
         #     "Reference Number",
         #     "Reference",
         #     "Number",
+        #     "PO NO",
+        #     "GRN No"
         # ]
 
         # documents = [
@@ -146,7 +148,9 @@ class CohereRerankProcess:
 
         # query = "None-None#Reference Number-4000058247#None-12.11.2024#Payment amt-158,765,479.00"
         # query = "payment_reference_code:\n  sourceField: Reference Number\n  value: '4000058247'\payment_amount:\n  sourceField: Payment amt\n  value: 158,765,479.00\npayment_date:\n  sourceField: null\n  value: 12.11.2024\n"
-        query = "payment_reference_code"
+        # query = "the reference code of the payment"
+        # query = "paymentNote"
+        query = "the billing reference of the related order"
         # query = "Reference Number: 4000058247"
 
         # query = "Reference Number-4000058247"
