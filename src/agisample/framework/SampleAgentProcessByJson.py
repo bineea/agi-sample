@@ -21,7 +21,7 @@ def multiply(multiply_json_data: str) -> int:
 def add(add_json_data: str) -> int:
     """Add two integers."""
     add_data = json.loads(add_json_data)
-    return add_data['first_int'] * add_data['second_int']
+    return add_data['first_int'] + add_data['second_int']
 
 
 @tool
