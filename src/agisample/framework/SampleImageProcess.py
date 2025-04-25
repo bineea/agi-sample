@@ -1,4 +1,5 @@
 from PIL import Image
+from pytesseract import pytesseract
 
 # 加载图像
 image_path = "C:\\Users\\guowb1\\Pictures\\Screenshots\\屏幕截图 2024-09-23 184625.png"
