@@ -12,6 +12,7 @@ import time
 from mimetypes import guess_type
 
 import layoutparser
+import pandas as pd
 import pdfplumber
 import pymupdf4llm
 from PIL import Image
@@ -365,9 +366,18 @@ class HandleFileVectorStoreProcess:
 
     def init_data_by_markitdown(self):
         file_path = os.path.join(Path(__file__).resolve().parents[4], "docs", "MY01-2701964.pdf")
+        # markitdown处理excel直接使用的pandas，但是会直接将第一行处理为表头
         md = MarkItDown()
         result = md.convert(file_path)
         print(result.text_content)
+
+    def init_data_by_pandas(self):
+        # file_path = os.path.join(Path(__file__).resolve().parents[4], "docs", "MY01-2701964.pdf")
+        file_path = "E:\document\CASH相关\Remittance文件\PaymentAdvice20241106170146（客户发出的）.xlsx"
+        df = pd.read_excel(file_path, header=None)
+        # 转换为 Markdown 格式字符串
+        markdown_str = df.to_markdown(index=False)
+        print(markdown_str)
 
 class HandleFileAssistant:
     HANDLE_FILE_ASSISTANT_PROMPT = ChatPromptTemplate.from_messages(
@@ -599,6 +609,8 @@ if __name__ == '__main__':
     # HandleFileVectorStoreProcess().init_data_by_unstructured()
 
     # HandleFileVectorStoreProcess().init_data_by_markitdown()
+
+    # HandleFileVectorStoreProcess().init_data_by_pandas()
 
     print("Done", end="----------------\n")
 
