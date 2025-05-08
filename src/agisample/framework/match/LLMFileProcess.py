@@ -378,8 +378,10 @@ class HandleFileVectorStoreProcess:
         # 获取前10行和最后10行
         # df_head = df.head(10)
         # df_tail = df.tail(10)
-        # 合并前后10行
-        # df_combined = pd.concat([df_head, df_tail], ignore_index=True)
+        # 插入中间省略标记
+        # ellipsis_row = pd.DataFrame([["..."] * df.shape[1]], columns=df.columns)
+        # ignore_index=True 可确保合并后的行索引是连续的（避免重复行号）。
+        # df_combined = pd.concat([df_head, ellipsis_row, df_tail], ignore_index=True)
         # 转换为 Markdown 格式字符串
         markdown_str = df.to_markdown(index=False)
         print(markdown_str)
