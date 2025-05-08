@@ -5,6 +5,7 @@ from io import BytesIO
 from pathlib import Path
 
 from PIL import Image
+from dotenv import load_dotenv, find_dotenv
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.prompts.chat import _TextTemplateParam, HumanMessagePromptTemplate, _ImageTemplateParam
 from langchain_openai import ChatOpenAI
@@ -60,6 +61,7 @@ system_no_example = """
 请始终遵循以上指引生成python代码。
 """
 
+_ = load_dotenv(find_dotenv())
 
 def image_to_base64(image_path: Path) -> str:
     image = Image.open(image_path)
@@ -105,7 +107,7 @@ PROMPT_TEMPLATE = ChatPromptTemplate.from_messages([
 
 chain = (
         PROMPT_TEMPLATE
-        | ChatOpenAI(model="gpt-4o-mini", temperature=0, api_key="", base_url="")
+        | ChatOpenAI(model="gpt-4o-mini", temperature=0)
 )
 
 response = chain.invoke({
