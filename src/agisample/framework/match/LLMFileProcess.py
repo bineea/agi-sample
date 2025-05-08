@@ -375,8 +375,11 @@ class HandleFileVectorStoreProcess:
         # file_path = os.path.join(Path(__file__).resolve().parents[4], "docs", "MY01-2701964.pdf")
         file_path = "E:\document\CASH相关\Remittance文件\PaymentAdvice20241106170146（客户发出的）.xlsx"
         df = pd.read_excel(file_path, header=None)
-        # 取前10行
-        # df_top10 = df.head(10)
+        # 获取前10行和最后10行
+        # df_head = df.head(10)
+        # df_tail = df.tail(10)
+        # 合并前后10行
+        # df_combined = pd.concat([df_head, df_tail], ignore_index=True)
         # 转换为 Markdown 格式字符串
         markdown_str = df.to_markdown(index=False)
         print(markdown_str)
