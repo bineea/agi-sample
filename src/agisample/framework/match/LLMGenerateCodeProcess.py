@@ -63,6 +63,18 @@ system_no_example = """
 
 _ = load_dotenv(find_dotenv())
 
+def convert_to_markdown(file_path: Path) -> str:
+    """
+    Convert the content of an Excel file to markdown format.
+    This function uses the MarkItDown library to read the Excel file and convert it to markdown.
+    """
+    from markitdown import MarkItDown
+
+    md = MarkItDown()
+    result = md.convert(file_path)
+    return result.text_content
+
+
 def image_to_base64(image_path: Path) -> str:
     image = Image.open(image_path)
     buffered = BytesIO()
@@ -92,6 +104,11 @@ def extract_python_code(markdown_string: str) -> str:
     return python_code[0]
 
 
+file_path = Path(r"E:\document\CASH相关\Remittance文件\邮件附件Excel\SIT-AP\Lenovo HK payment listing 260325.xlsx")
+content = convert_to_markdown(file_path)
+image = image_to_base64(Path(r"E:\document\CASH相关\Remittance文件\邮件附件Excel\SIT-AP\Lenovo HK payment listing 260325截图.png"))
+
+
 PROMPT_TEMPLATE = ChatPromptTemplate.from_messages([
         (
             "system",
@@ -111,72 +128,10 @@ chain = (
 )
 
 response = chain.invoke({
-    "file_path": Path("E:\document\CASH相关\Remittance文件\PaymentAdvice20241106170146（客户发出的）.xlsx"),
-    "content": """
-| 0                    | 1                                 | 2          | 3             | 4        |
-|:---------------------|:----------------------------------|:-----------|:--------------|:---------|
-| 聯強國際股份有限公司 | nan                               | nan        | nan           | nan      |
-| 付款明細             | nan                               | nan        | nan           | nan      |
-| nan                  | nan                               | nan        | nan           | nan      |
-| 付款對象             | 荷蘭商聯想股份有限公司 台灣分公司 | nan        | nan           | nan      |
-| 付款金額             | NTD 19,139,525.00                 | nan        | nan           | nan      |
-| 付款日               | 2024/11/06                        | nan        | nan           | nan      |
-| nan                  | nan                               | nan        | nan           | nan      |
-| 序號                 | 憑證日期                          | 憑證號碼   | 付款金額      | 沖帳資料 |
-| 1                    | 2024/09/02                        | EY17444515 | 1475040       | nan      |
-| 2                    | 2024/09/02                        | EY17444557 | 9094          | nan      |
-| 3                    | 2024/09/03                        | EY17444613 | 288750        | nan      |
-| 4                    | 2024/09/03                        | EY17444614 | 30450         | nan      |
-| 5                    | 2024/09/03                        | EY17444617 | 5565          | nan      |
-| 6                    | 2024/09/03                        | EY17444649 | 71820         | nan      |
-| 7                    | 2024/09/03                        | EY17444652 | 220931        | nan      |
-| 8                    | 2024/09/04                        | EY17444694 | 26250         | nan      |
-| 9                    | 2024/09/04                        | EY17444695 | 59640         | nan      |
-| 10                   | 2024/09/04                        | EY17444696 | 714000        | nan      |
-| 11                   | 2024/09/04                        | EY17444729 | 433125        | nan      |
-| 12                   | 2024/09/04                        | EY17444733 | 625644        | nan      |
-| 13                   | 2024/09/04                        | EY17444738 | 735000        | nan      |
-| 14                   | 2024/09/04                        | EY17444739 | 567000        | nan      |
-| 15                   | 2024/09/04                        | EY17444741 | 14537         | nan      |
-| 16                   | 2024/09/04                        | EY17444758 | 819000        | nan      |
-| 17                   | 2024/09/04                        | EY17444759 | 590625        | nan      |
-| 18                   | 2024/09/05                        | EY17444769 | 926100        | nan      |
-| 19                   | 2024/09/05                        | EY17444816 | 7876          | nan      |
-| 20                   | 2024/09/06                        | EY17444822 | 345443        | nan      |
-| 21                   | 2024/09/06                        | EY17444857 | 7875          | nan      |
-| 22                   | 2024/09/06                        | EY17444858 | 21525         | nan      |
-| 23                   | 2024/09/06                        | EY17444880 | 511875        | nan      |
-| 24                   | 2024/09/06                        | EY17444881 | 1967858       | nan      |
-| 25                   | 2024/09/06                        | EY17444887 | 1445903       | nan      |
-| 26                   | 2024/09/06                        | EY17444901 | 713664        | nan      |
-| 27                   | 2024/09/06                        | EY17444904 | 29925         | nan      |
-| 28                   | 2024/09/06                        | EY17444905 | 488615        | nan      |
-| 29                   | 2024/09/06                        | EY17444907 | 2801400       | nan      |
-| 30                   | 2024/09/06                        | EY17444924 | 636300        | nan      |
-| 31                   | 2024/09/06                        | EY17444925 | 33023         | nan      |
-| 32                   | 2024/09/06                        | EY17444926 | 297203        | nan      |
-| 33                   | 2024/09/07                        | EY17444975 | 4300          | nan      |
-| 34                   | 2024/09/07                        | EY17444979 | 33020         | nan      |
-| 35                   | 2024/09/08                        | EY17445016 | 1732500       | nan      |
-| 36                   | 2024/09/09                        | EY17445039 | 61753         | nan      |
-| 37                   | 2024/09/09                        | EY17445051 | 1638          | nan      |
-| 38                   | 2024/09/09                        | EY17445052 | 2457          | nan      |
-| 39                   | 2024/09/09                        | EY17445108 | 74550         | nan      |
-| 40                   | 2024/09/09                        | EY17445112 | 955537        | nan      |
-| 41                   | 2024/09/09                        | EY17445124 | 14364         | nan      |
-| 42                   | 2024/09/10                        | EY17445165 | 3591          | nan      |
-| 43                   | 2024/09/10                        | EY17445176 | 1638          | nan      |
-| 44                   | 2024/10/22                        | AZ17450016 | -108360       | nan      |
-| 45                   | 2024/10/22                        | AZ17450016 | -95760        | nan      |
-| 46                   | 2024/10/22                        | AZ17450016 | -14700        | nan      |
-| 47                   | 2024/10/23                        | ZA17445261 | -228987       | nan      |
-| 48                   | 2024/10/23                        | ZA17445261 | -105987       | nan      |
-| 49                   | 2024/10/23                        | ZA17445261 | -91350        | nan      |
-| 50                   | 2024/10/23                        | ZA17445261 | -21735        | nan      |
-| nan                  | 合計                              | nan        | 19,139,525.00 | nan      |
-    """,
-    "image": image_to_base64(Path("E:\document\CASH相关\Remittance文件\PaymentAdvice20241106170146（客户发出的）.png")),
-    "thought": "所有数据均转换为字符串再进行逻辑处理，同时金额数据保留小数位",
+    "file_path": file_path,
+    "content": content,
+    "image": image,
+    "thought": "数据可能是字符串，也可能是浮点数，谨慎处理数据格式。金额数据保留小数位",
     "observation": "",
     "total_field": 1000,
 })
@@ -188,13 +143,13 @@ plotly_code = extract_python_code(result)
 
 print("Extracted Python code: \n" + plotly_code)
 ldict = {
-    "file_path": Path("E:\document\CASH相关\Remittance文件\PaymentAdvice20241106170146（客户发出的）.xlsx")
+    "file_path": file_path
 }
 try:
-    import PyPDF2
-    import fitz
-    from PyPDF2 import PdfReader
-    import pandas as pd
+    # import PyPDF2
+    # import fitz
+    # from PyPDF2 import PdfReader
+    # import pandas as pd
     import openpyxl
     exec(plotly_code, globals(), ldict)
     print(ldict)
