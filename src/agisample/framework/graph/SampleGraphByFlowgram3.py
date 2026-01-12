@@ -50,13 +50,47 @@ class DataResolver:
         # 处理引用 (Ref) ["node_id", "property_name"]
         elif v_type == "ref":
             content = value_config.get("content", [])
-            if len(content) == 2:
-                ref_node_id, ref_key = content
-                # 从全局状态中查找变量
-                return state["variables"].get(ref_key)
+            return DataResolver._resolve_ref(content, state)
 
         # 递归处理对象或表达式 (简化版)
         return value_config
+
+    @staticmethod
+    def _resolve_ref(content: Any, state: WorkflowState):
+        variables = state.get("variables", {}) if isinstance(state, dict) else {}
+        if not variables:
+            return None
+
+        if isinstance(content, (list, tuple)):
+            # 顶层优先级：尝试将 node_id 作为命名空间
+            parts = [str(part) for part in content if part is not None]
+            if not parts:
+                return None
+
+            node_id, *path = parts
+            current = variables.get(node_id)
+            for key in path:
+                if isinstance(current, dict):
+                    current = current.get(key)
+                else:
+                    current = None
+                if current is None:
+                    break
+            if current is not None:
+                return current
+
+            # 回退 1：直接使用末尾字段名（兼容扁平变量存储）
+            if path:
+                fallback_key = path[-1]
+                if fallback_key in variables:
+                    return variables.get(fallback_key)
+
+            # 回退 2：将路径以 . 连接作为 key
+            dotted_key = ".".join(parts)
+            if dotted_key in variables:
+                return variables[dotted_key]
+
+        return None
 
 
 class LogicEvaluator:
@@ -64,20 +98,20 @@ class LogicEvaluator:
 
     @staticmethod
     def evaluate(condition: dict, state: WorkflowState) -> bool:
-        # 获取左值 (通常是 ref)
-        left_config = condition.get("value", {}).get("left")
+        value_block = condition.get("value", {}) if isinstance(condition, dict) else {}
+        left_config = value_block.get("left")
+        right_config = value_block.get("right")
+        operator_key = value_block.get("operator")
+
         left_val = DataResolver.resolve(left_config, state)
+        right_val = DataResolver.resolve(right_config, state)
 
-        op = condition.get("value", {}).get("operator")
-
-        # 实现简单的算子
-        if op == "is_true":
+        if operator_key == "is_true":
             return bool(left_val) is True
-        elif op == "is_not_empty":
-            return left_val is not None and left_val != "" and left_val != []
-        elif op == "equals":
-            # 需解析右值，这里省略
-            return True
+        if operator_key == "is_not_empty":
+            return left_val not in (None, "", [], {})
+        if operator_key == "equals":
+            return left_val == right_val
 
         return False
 
@@ -359,7 +393,7 @@ async def main():
 
     print("🏃 Running Workflow...")
     # 初始化状态
-    initial_state = {"variables": {}, "messages":[]}
+    initial_state = {"variables": {"start_0": {"enable": True}}, "messages":[]}
 
     # 执行图
     result = await app.ainvoke(initial_state)
