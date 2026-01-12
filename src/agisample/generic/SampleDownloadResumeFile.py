@@ -6,6 +6,8 @@ import json
 import time
 import unicodedata
 from typing import Any, Optional, Dict, List
+from urllib.parse import unquote, unquote_to_bytes
+from email.header import decode_header
 import requests
 import urllib3
 
@@ -37,18 +39,45 @@ def find_key_recursively(obj: Any, target_key: str) -> Optional[Any]:
     return None
 
 
+def decode_header_value(value: str) -> str:
+    try:
+        parts = decode_header(value)
+    except Exception:
+        return value
+    fragments = []
+    for text, charset in parts:
+        if isinstance(text, bytes):
+            encoding = charset or "utf-8"
+            try:
+                fragments.append(text.decode(encoding))
+            except Exception:
+                fragments.append(text.decode("utf-8", errors="replace"))
+        else:
+            fragments.append(text)
+    return "".join(fragments)
+
+
 def parse_content_disposition(cd: Optional[str]) -> Optional[str]:
     # 解析 Content-Disposition 里的文件名
     if not cd:
         return None
     # filename*（RFC 5987）
-    m = re.search(r"filename\*\s*=\s*[^']*'[^']*'([^;]+)", cd, flags=re.IGNORECASE)
+    m = re.search(r"filename\*\s*=\s*([^']*)'[^']*'([^;]+)", cd, flags=re.IGNORECASE)
     if m:
-        return normalize_filename(m.group(1))
+        charset = (m.group(1) or "utf-8").strip() or "utf-8"
+        encoded_name = m.group(2)
+        try:
+            raw = unquote_to_bytes(encoded_name)
+            decoded = raw.decode(charset, errors="replace")
+        except Exception:
+            decoded = unquote(encoded_name)
+        return normalize_filename(decoded)
     # 普通 filename
     m = re.search(r'filename\s*=\s*"?([^";]+)"?', cd, flags=re.IGNORECASE)
     if m:
-        return normalize_filename(m.group(1))
+        decoded = decode_header_value(m.group(1))
+        decoded = unquote(decoded)
+        return normalize_filename(decoded)
     return None
 
 
@@ -142,7 +171,7 @@ def main():
     parser = argparse.ArgumentParser(description="批量下载简历附件（自测用）")
     parser.add_argument("--token", help="Authorization: Bearer <token>",
                         default="")
-    parser.add_argument("--status", default="", help="列表筛选的 status 参数")
+    parser.add_argument("--status", default="Submitted （Unread）", help="列表筛选的 status 参数")
     parser.add_argument("--page-size", type=int, default=50, help="每页数量")
     parser.add_argument("--out", default="downloads", help="下载输出目录")
     parser.add_argument("--delay", type=float, default=0.2, help="请求间隔秒，用于限速")
