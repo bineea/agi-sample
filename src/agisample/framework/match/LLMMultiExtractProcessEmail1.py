@@ -8,8 +8,7 @@ from PIL import Image
 from dotenv import load_dotenv, find_dotenv
 from langchain_core.messages import AIMessage
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.prompts.chat import _TextTemplateParam, HumanMessagePromptTemplate, _ImageTemplateParam, \
-    MessagesPlaceholder
+from langchain_core.prompts.chat import HumanMessagePromptTemplate, MessagesPlaceholder
 from langchain_openai import ChatOpenAI
 
 system_no_example = """
@@ -194,10 +193,10 @@ PROMPT_TEMPLATE = ChatPromptTemplate.from_messages([
             system_no_example,
         ),
         HumanMessagePromptTemplate.from_template([
-            _TextTemplateParam(text="请根据以下内容，提取并整理客户付款文档中符合要求的相关属性和值。billing_information一次最多输出10行，并判断是否已经输出了全部的billing_information。"),
-            _TextTemplateParam(text="这是文档页面的文本内容：{content}"),
-            _TextTemplateParam(text="这是显示文档页面内容的图像："),
-            _ImageTemplateParam(image_url="data:image/JPEG;base64,{image}"),
+            {"type": "text", "text": "请根据以下内容，提取并整理客户付款文档中符合要求的相关属性和值。billing_information一次最多输出10行，并判断是否已经输出了全部的billing_information。"},
+            {"type": "text", "text": "这是文档页面的文本内容：{content}"},
+            {"type": "text", "text": "这是显示文档页面内容的图像："},
+            {"type": "image_url", "image_url": {"url": "data:image/JPEG;base64,{image}"}},
         ]),
         MessagesPlaceholder("messages"),
     ])
@@ -222,7 +221,7 @@ for i in range(10):
 
     # If no response with text is found, return the first response's content (which may be empty)
     messages.append(response)
-    human_message = HumanMessagePromptTemplate.from_template([_TextTemplateParam(text="继续输出剩余数据，最多输出10条billing_information数据，并判断是否输出了所有数据。")])
+    human_message = HumanMessagePromptTemplate.from_template([{"type": "text", "text": "继续输出剩余数据，最多输出10条billing_information数据，并判断是否输出了所有数据。"}])
     messages.append(human_message.format_messages()[0])
 
 
@@ -233,3 +232,4 @@ with open("E:\document\CASH相关\Remittance文件\数据量大导致输出结�
             f.write(message.content + "\n")
 
 print("done")
+

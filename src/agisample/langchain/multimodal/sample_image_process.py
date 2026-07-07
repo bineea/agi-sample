@@ -1,29 +1,35 @@
+from pathlib import Path
+
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_openai import ChatOpenAI
 from PIL import Image
 from pytesseract import pytesseract
 
-# 加载图像
-image_path = "C:\\Users\\guowb1\\Pictures\\Screenshots\\屏幕截图 2024-09-23 184625.png"
-image = Image.open(image_path)
 
-# 使用 pytesseract 获取每个字符的坐标
-boxes = pytesseract.image_to_boxes(image)
+DEFAULT_IMAGE_PATH = Path.home() / "Pictures" / "Screenshots" / "屏幕截图 2024-09-23 184625.png"
 
 
-from langchain.chains import LLMChain
-from langchain.llms import OpenAI
-from langchain.prompts import PromptTemplate
+def extract_image_boxes(image_path: Path = DEFAULT_IMAGE_PATH) -> str:
+    image = Image.open(image_path)
+    return pytesseract.image_to_boxes(image)
 
-# 定义处理过程的模板
-template = """解析图片内容，并整理为json格式输出:
+
+def parse_boxes_to_json(text: str) -> str:
+    template = """解析图片内容，并整理为 JSON 格式输出：
 {text}"""
+    prompt = ChatPromptTemplate.from_template(template)
+    llm = ChatOpenAI(model="gpt-4o", temperature=0)
+    chain = prompt | llm | StrOutputParser()
+    return chain.invoke({"text": text})
 
-# 创建一个 PromptTemplate
-prompt = PromptTemplate(input_variables=["text"], template=template)
 
-# 创建一个 OpenAI LLMChain
-llm = OpenAI(model="gpt-4o")
-chain = LLMChain(llm=llm, prompt=prompt)
+def main() -> None:
+    boxes = extract_image_boxes()
+    result = parse_boxes_to_json(boxes)
+    print(result)
 
-# 使用链执行解析操作
-result = chain.run(text=boxes)
-print(result)
+
+if __name__ == "__main__":
+    main()
+

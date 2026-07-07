@@ -71,10 +71,9 @@
 
 建议使用 Python 3.11 或以上版本。
 
-```bash
-python -m venv .venv
-source .venv/Scripts/activate  # Windows Git Bash
-pip install -r requirements.txt
+```powershell
+py -3.13 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
 当前 `requirements.txt` 只覆盖了部分核心依赖。某些实验脚本还需要按需安装可选依赖，例如：
@@ -83,6 +82,7 @@ pip install -r requirements.txt
 - 文档解析：`pymupdf`、`pdfplumber`、`pymupdf4llm`、`markitdown`
 - 本地模型/前端：`gradio`、对应模型依赖
 - 传统 ML：`scikit-learn`、`torch`、`transformers`
+- LangChain v1 生态：`langchain`、`langchain-openai`、`langchain-community`、`langchain-elasticsearch`、`langgraph`、按需使用的 `langchain-classic` / `langchain-experimental`
 - 其他工具：`agentscope`、`vanna`、`cohere`
 
 建议在运行具体 demo 前，根据 import 报错补充依赖，或把稳定需要的依赖逐步沉淀到 `requirements.txt`。
@@ -124,27 +124,27 @@ _ = load_dotenv(find_dotenv())
 
 运行前建议先设置 `PYTHONPATH=src`，确保源码包可被导入：
 
-```bash
-export PYTHONPATH=src
+```powershell
+$env:PYTHONPATH='src'
 ```
 
 ### 1. 验证包结构
 
-```bash
-PYTHONPATH=src python tests/test_package_structure.py -q
-python -m compileall -q src/agisample
+```powershell
+$env:PYTHONPATH='src'; .\.venv\Scripts\python.exe tests/test_package_structure.py -q
+$env:PYTHONPATH='src'; .\.venv\Scripts\python.exe -m compileall -q src/agisample
 ```
 
 ### 2. LangChain Agent 示例
 
 ```bash
-PYTHONPATH=src python src/agisample/langchain/agents/sample_agent_process.py
+.\\.venv\\Scripts\\python.exe src/agisample/langchain/agents/sample_agent_process.py
 ```
 
 ### 3. RAG 示例
 
 ```bash
-PYTHONPATH=src python src/agisample/langchain/rag/sample_rag_process.py
+.\\.venv\\Scripts\\python.exe src/agisample/langchain/rag/sample_rag_process.py
 ```
 
 说明：RAG 示例依赖 `docs/llama2.pdf` 和 `data/sample_db`。如需重新构建向量库，可在代码中调用 `SampleRagProcess().init_data()`。
@@ -152,7 +152,7 @@ PYTHONPATH=src python src/agisample/langchain/rag/sample_rag_process.py
 ### 4. LangGraph 基础 Chatbot
 
 ```bash
-PYTHONPATH=src python src/agisample/framework/graph/SampleGraphBasicChatbot.py
+.\\.venv\\Scripts\\python.exe src/agisample/framework/graph/SampleGraphBasicChatbot.py
 ```
 
 ### 5. Azure Document Intelligence 示例
@@ -173,6 +173,10 @@ PYTHONPATH=src python src/agisample/document_ai/resume_downloader/download_resum
   --page-size 50 \
   --out downloads
 ```
+
+### 7. Deep Agents TypeScript 示例
+
+`examples/langchain/deepagent/sample_deep_agent.ts` 是 JavaScript/TypeScript 生态示例，不属于 Python package，也不使用 `requirements.txt` 安装依赖。运行前请在单独的 Node.js 项目中安装 npm 依赖。
 
 ## 数据与生成产物
 

@@ -2,8 +2,8 @@ import json
 from typing import TypedDict
 
 from dotenv import load_dotenv, find_dotenv
-from langchain_community.chat_models import ChatOpenAI
-from langgraph.checkpoint.memory import MemorySaver
+from langchain_openai import ChatOpenAI
+from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.graph import StateGraph, END
 
 _ = load_dotenv(find_dotenv())
@@ -78,7 +78,7 @@ workflow.add_conditional_edges("process_input",
                                    "N": "generate_question"
                                })
 
-memory = MemorySaver()
+memory = InMemorySaver()
 graph = workflow.compile(checkpointer=memory)
 
 

@@ -253,7 +253,7 @@ class RemittanceDataVectorManager:
     def __init__(self):
         self.__embedding = OpenAIEmbeddings()
 
-    def save(self, documents=Type[list[Document]]):
+    def save(self, documents: list[Document]) -> None:
         faiss_client = FAISS.from_documents(documents, self.__embedding)
         faiss_client.save_local(
             os.path.join(RemittanceDataVectorManager.BASE_DIR, "data", RemittanceDataVectorManager.DB_LOCAL_FILE_NAME),
@@ -262,31 +262,28 @@ class RemittanceDataVectorManager:
     def retriever(self):
         db_local_file_path = os.path.join(RemittanceDataVectorManager.BASE_DIR, "data",
                                           RemittanceDataVectorManager.DB_LOCAL_FILE_NAME)
-        faiss_client = FAISS.load_local(db_local_file_path, self.__embedding, RemittanceDataVectorManager.INDEX_NAME,
-                                        allow_dangerous_deserialization=True)
+        faiss_client = FAISS.load_local(db_local_file_path, self.__embedding, RemittanceDataVectorManager.INDEX_NAME)
         return faiss_client.as_retriever()
 
     def search(self, query):
-        docs = self.retriever().get_relevant_documents(query)
+        docs = self.retriever().invoke(query)
         return docs[0].page_content
 
 
 class HandleFileVectorStoreProcess:
     def init_data_by_pymupdf(self):
         pdf_loader = PyMuPDFLoader(os.path.join(Path(__file__).resolve().parents[4], "docs", "MY01-2701964.pdf"))
-        pages = pdf_loader.load_and_split()
+        documents = pdf_loader.load()
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=1000,
             chunk_overlap=100,
             length_function=len,
             add_start_index=True,
         )
-        split_docs = text_splitter.create_documents(
-            [page.page_content for page in pages[:10]]
-        )
+        split_docs = text_splitter.split_documents(documents[:10])
 
-        print([page.page_content for page in pages[:10]])
-        return pages[0].page_content
+        print([page.page_content for page in documents[:10]])
+        return documents[0].page_content
         # print(split_docs)
         # RemittanceDataVectorManager().save(split_docs)
 
@@ -620,5 +617,6 @@ if __name__ == '__main__':
     # HandleFileVectorStoreProcess().init_data_by_pandas()
 
     print("Done", end="----------------\n")
+
 
 

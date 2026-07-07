@@ -8,8 +8,7 @@ from PIL import Image
 from dotenv import load_dotenv, find_dotenv
 from langchain_core.messages import AIMessage
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.prompts.chat import _TextTemplateParam, HumanMessagePromptTemplate, _ImageTemplateParam, \
-    MessagesPlaceholder
+from langchain_core.prompts.chat import HumanMessagePromptTemplate, MessagesPlaceholder
 from langchain_openai import ChatOpenAI
 
 # system_no_example = """
@@ -217,10 +216,10 @@ PROMPT_TEMPLATE = ChatPromptTemplate.from_messages([
             system_no_example,
         ),
         HumanMessagePromptTemplate.from_template([
-            # _TextTemplateParam(text="订单开票信息分批多次提取，一次最多提取20条数据，针对订单开票信息数据进行编号，根据编号认真判断是否已经提取了全部的订单开票信息。"),
-            _TextTemplateParam(text="这是文档页面的文本内容：{content}"),
-            _TextTemplateParam(text="这是显示文档页面内容的图像："),
-            _ImageTemplateParam(image_url="data:image/JPEG;base64,{image}"),
+            # {"type": "text", "text": "订单开票信息分批多次提取，一次最多提取20条数据，针对订单开票信息数据进行编号，根据编号认真判断是否已经提取了全部的订单开票信息。"},
+            {"type": "text", "text": "这是文档页面的文本内容：{content}"},
+            {"type": "text", "text": "这是显示文档页面内容的图像："},
+            {"type": "image_url", "image_url": {"url": "data:image/JPEG;base64,{image}"}},
         ]),
         MessagesPlaceholder("messages"),
     ])
@@ -245,7 +244,7 @@ for i in range(1):
 
     # If no response with text is found, return the first response's content (which may be empty)
     messages.append(response)
-    human_message = HumanMessagePromptTemplate.from_template([_TextTemplateParam(text="继续提取剩余的订单开票信息数据，一次最多提取20条订单开票信息数据，针对订单开票信息数据进行编号，根据编号认真判断是否已经提取了全部的订单开票信息。")])
+    human_message = HumanMessagePromptTemplate.from_template([{"type": "text", "text": "继续提取剩余的订单开票信息数据，一次最多提取20条订单开票信息数据，针对订单开票信息数据进行编号，根据编号认真判断是否已经提取了全部的订单开票信息。"}])
     messages.append(human_message.format_messages()[0])
 
 
@@ -256,3 +255,4 @@ with open("E:\document\CASH相关\Remittance文件\数据量大导致输出结�
             f.write(message.content + "\n")
 
 print("done")
+

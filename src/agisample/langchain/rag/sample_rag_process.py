@@ -1,37 +1,31 @@
 import os
 from pathlib import Path
 
-from langchain_community.chat_models import ChatOpenAI
 from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
+from langchain_openai import ChatOpenAI
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from agisample.langchain.vectorstores.sample_data_vector_manager import SampleDataVectorManager
 
 
-class SampleRagProcess():
+class SampleRagProcess:
 
     BASE_DIR = Path(__file__).resolve().parents[3]
 
     def init_data(self):
         pdf_loader = PyMuPDFLoader(os.path.join(SampleDataVectorManager.BASE_DIR, "docs", "llama2.pdf"))
-        pages = pdf_loader.load_and_split()
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=200,
             chunk_overlap=100,
             length_function=len,
             add_start_index=True,
         )
-        split_docs = text_splitter.create_documents(
-            [page.page_content for page in pages[:10]]
-        )
+        documents = pdf_loader.load()
+        split_docs = text_splitter.split_documents(documents[:10])
         SampleDataVectorManager().save(split_docs)
-
-    # PROMPT = """Answer the question: {question} based only on the following context: {context}. The answer must not contain external information beyond the context provided. If unable to answer the question based on the provided context, reply directly: unable to answer the question based on known information"""
-    #
-    # PROMPT_TEMPLATE = ChatPromptTemplate.from_template(TEMPLATE)
 
     PROMPT_TEMPLATE = ChatPromptTemplate.from_messages([
         (
@@ -56,7 +50,6 @@ class SampleRagProcess():
 
 
 if __name__ == '__main__':
-    # print(SampleRagProcess.PROMPT)
     print("-----------")
     print(SampleDataVectorManager().search("llama2有多少参数？"))
     print("-----------")
@@ -64,3 +57,4 @@ if __name__ == '__main__':
     print("-----------")
     print(SampleRagProcess().rag("1加1等于多少？"))
     print("-----------")
+

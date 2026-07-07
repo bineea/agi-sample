@@ -1,16 +1,8 @@
-from langchain.retrievers.document_compressors.listwise_rerank import (
+from langchain_classic.retrievers.document_compressors.listwise_rerank import (
     LLMListwiseRerank,
 )
 from langchain_core.documents import Document
 from langchain_openai import ChatOpenAI
-
-# documents = [
-#     Document("Sally is my friend from school"),
-#     Document("Steve is my friend from home"),
-#     Document("I didn't always like yogurt"),
-#     Document("I wonder why it's called football"),
-#     Document("Where's waldo"),
-# ]
 
 
 documents = [
@@ -19,15 +11,24 @@ documents = [
     Document("Reference"),
     Document("Number"),
     Document("PO NO"),
-    Document("GRN No")
+    Document("GRN No"),
 ]
 
 
-reranker = LLMListwiseRerank.from_llm(
-    llm=ChatOpenAI(model="gpt-4o-mini"), top_n=3
-)
-# compressed_docs = reranker.compress_documents(documents, "Who is steve")
-compressed_docs = reranker.compress_documents(documents, "the billing reference of the related order")
-print(compressed_docs)
-assert len(compressed_docs) == 3
-assert "Steve" in compressed_docs[0].page_content
+def rerank_documents(query: str, top_n: int = 3) -> list[Document]:
+    reranker = LLMListwiseRerank.from_llm(
+        llm=ChatOpenAI(model="gpt-4o-mini"), top_n=top_n
+    )
+    return reranker.compress_documents(documents, query)
+
+
+def main() -> None:
+    compressed_docs = rerank_documents("the billing reference of the related order")
+    print(compressed_docs)
+    assert len(compressed_docs) == 3
+    assert all(doc.page_content for doc in compressed_docs)
+
+
+if __name__ == "__main__":
+    main()
+

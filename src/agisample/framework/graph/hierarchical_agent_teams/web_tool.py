@@ -1,10 +1,12 @@
-from typing import Annotated, List
+from typing import List
 
 from langchain_community.document_loaders import WebBaseLoader
 from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain_core.tools import tool
 
-tavily_tool = TavilySearchResults(max_results=5)
+
+def create_tavily_tool():
+    return TavilySearchResults(max_results=5)
 
 
 @tool
@@ -18,5 +20,3 @@ def scrape_webpages(urls: List[str]) -> str:
             for doc in docs
         ]
     )
-
-

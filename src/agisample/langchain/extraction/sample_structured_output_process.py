@@ -1,10 +1,7 @@
 from dotenv import load_dotenv, find_dotenv
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.pydantic_v1 import BaseModel, Field
 from langchain_openai import ChatOpenAI
-
-
-_ = load_dotenv(find_dotenv())
+from pydantic import BaseModel, Field
 
 
 class Classification(BaseModel):
@@ -27,12 +24,12 @@ class SampleStructuredOutputProcess:
     """
     )
 
-    # LLM
-    llm = ChatOpenAI(temperature=0, model="gpt-4o-mini").with_structured_output(
-        Classification
-    )
-
-    tagging_chain = tagging_prompt | llm
+    def __init__(self):
+        load_dotenv(find_dotenv())
+        llm = ChatOpenAI(temperature=0, model="gpt-4o-mini").with_structured_output(
+            Classification
+        )
+        self.tagging_chain = self.tagging_prompt | llm
 
     def process(self, input: str) -> Classification:
         return self.tagging_chain.invoke({"input": input})
@@ -48,7 +45,7 @@ class ClassificationAndReasoning(BaseModel):
 
 
 class SampleStructuredOutputReActProcess:
-    # 统一的提示词，包含ReAct思考过程
+    # 统一的提示词，包含 ReAct 思考过程。
     react_prompt = ChatPromptTemplate.from_template(
         """
         Please analyze the following text step by step:
@@ -70,6 +67,7 @@ class SampleStructuredOutputReActProcess:
     )
 
     def __init__(self, max_iterations=2):
+        load_dotenv(find_dotenv())
         self.llm = ChatOpenAI(temperature=0, model="gpt-4o-mini").with_structured_output(
             ClassificationAndReasoning
         )
@@ -79,35 +77,29 @@ class SampleStructuredOutputReActProcess:
         previous_thoughts = "No previous analysis yet."
         final_classification = None
 
-        # ReAct循环
         for i in range(1, self.max_iterations + 1):
-            # 准备提示词输入
             prompt_input = {
                 "input": input,
                 "iteration": i,
-                "previous_thoughts": previous_thoughts
+                "previous_thoughts": previous_thoughts,
             }
 
-            # 获取当前迭代的分类结果
             current_classification = self.llm.invoke(
                 self.react_prompt.format(**prompt_input)
             )
 
             print(f"第{i}次迭代分类结果: {current_classification}")
 
-            # 更新前一次的思考过程
             previous_thoughts = f"""
             Iteration {i} classification:
-            - Sentiment: negative 
+            - Sentiment: {current_classification.sentiment}
             - Aggressiveness: {current_classification.aggressiveness}/10
             - Language: {current_classification.language}
-            - Reasoning: negative
+            - Reasoning: {current_classification.reasoning}
             """
 
-            # 保存最终分类结果
             final_classification = current_classification
 
-            # 如果是最后一次迭代，退出循环
             if i == self.max_iterations:
                 break
 

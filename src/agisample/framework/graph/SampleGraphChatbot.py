@@ -1,6 +1,6 @@
 from dotenv import load_dotenv, find_dotenv
 from langchain_core.messages import HumanMessage
-from langchain_core.pydantic_v1 import BaseModel
+from pydantic import BaseModel
 from langchain_openai import ChatOpenAI
 
 _ = load_dotenv(find_dotenv())

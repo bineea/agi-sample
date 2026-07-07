@@ -7,7 +7,7 @@ from pathlib import Path
 from PIL import Image
 from dotenv import load_dotenv, find_dotenv
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.prompts.chat import _TextTemplateParam, HumanMessagePromptTemplate, _ImageTemplateParam
+from langchain_core.prompts.chat import HumanMessagePromptTemplate
 from langchain_openai import ChatOpenAI
 
 system_no_example = """
@@ -111,10 +111,10 @@ PROMPT_TEMPLATE = ChatPromptTemplate.from_messages([
             system_no_example,
         ),
         HumanMessagePromptTemplate.from_template([
-            _TextTemplateParam(text="请根据以下内容，编写python代码，使用openpyxl读取指定文件路径{file_path}的excel文件，提取并整理客户付款文档中符合要求的相关属性和值。"),
-            _TextTemplateParam(text="这是文档面的文本内容：{content}"),
-            _TextTemplateParam(text="这是显示文档面内容的图像："),
-            _ImageTemplateParam(image_url="data:image/JPEG;base64,{image}"),
+            {"type": "text", "text": "请根据以下内容，编写python代码，使用openpyxl读取指定文件路径{file_path}的excel文件，提取并整理客户付款文档中符合要求的相关属性和值。"},
+            {"type": "text", "text": "这是文档面的文本内容：{content}"},
+            {"type": "text", "text": "这是显示文档面内容的图像："},
+            {"type": "image_url", "image_url": {"url": "data:image/JPEG;base64,{image}"}},
         ])
     ])
 
@@ -152,3 +152,4 @@ try:
     # print(json.dumps(ldict, indent=2))
 except Exception as e:
     raise RuntimeError(f"Error executing code: {e}")
+

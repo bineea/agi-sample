@@ -7,7 +7,7 @@ from pathlib import Path
 from PIL import Image
 from dotenv import load_dotenv, find_dotenv
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.prompts.chat import _TextTemplateParam, HumanMessagePromptTemplate, _ImageTemplateParam
+from langchain_core.prompts.chat import HumanMessagePromptTemplate
 from langchain_openai import ChatOpenAI
 
 system_no_example = """
@@ -63,9 +63,9 @@ PROMPT_TEMPLATE = ChatPromptTemplate.from_messages([
             system_no_example,
         ),
         HumanMessagePromptTemplate.from_template([
-            # _TextTemplateParam(text="这是文档当前页面的文本内容：{content}"),
-            _TextTemplateParam(text="这是指定文件路径的excel文件截图："),
-            _ImageTemplateParam(image_url="data:image/JPEG;base64,{image}"),
+            # {"type": "text", "text": "这是文档当前页面的文本内容：{content}"},
+            {"type": "text", "text": "这是指定文件路径的excel文件截图："},
+            {"type": "image_url", "image_url": {"url": "data:image/JPEG;base64,{image}"}},
         ]),
         (
             "system",
@@ -161,3 +161,4 @@ try:
     print(ldict)
 except Exception as e:
     raise RuntimeError(f"Error executing code: {e}")
+

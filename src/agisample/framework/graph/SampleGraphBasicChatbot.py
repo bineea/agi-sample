@@ -1,5 +1,5 @@
 from dotenv import load_dotenv, find_dotenv
-from langchain_community.chat_models import ChatOpenAI
+from langchain_openai import ChatOpenAI
 from typing import Annotated
 
 from typing_extensions import TypedDict
@@ -42,3 +42,4 @@ while True:
     for event in graph.stream({"messages": ("user", user_input)}):
         for value in event.values():
             print("Assistant:", value["messages"][-1].content)
+

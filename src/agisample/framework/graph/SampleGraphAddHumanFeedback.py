@@ -1,6 +1,6 @@
 from typing import TypedDict
 
-from langgraph.checkpoint.memory import MemorySaver
+from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.graph import StateGraph, START, END
 
 
@@ -39,7 +39,7 @@ builder.add_edge("step_3", "step_4")
 builder.add_edge("step_4", END)
 
 # Set up memory
-memory = MemorySaver()
+memory = InMemorySaver()
 
 # Add
 graph = builder.compile(checkpointer=memory, interrupt_before=["human_feedback"])
@@ -107,3 +107,4 @@ for event in graph.stream(None, config_new_again, stream_mode="values"):
 print(graph.get_state(config).values)
 print(graph.get_state(config_new).values)
 print(graph.get_state(config_new_again).values)
+

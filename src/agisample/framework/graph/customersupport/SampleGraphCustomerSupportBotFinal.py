@@ -79,7 +79,7 @@ class Assistant:
         return {"messages": result}
 
 
-from langgraph.checkpoint.memory import MemorySaver
+from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.graph import END, StateGraph, START
 from langgraph.prebuilt import tools_condition
 from agisample.framework.graph.customersupport.HandleTool import create_tool_node_with_fallback, _print_event
@@ -148,7 +148,7 @@ builder.add_edge("sensitive_tools", "assistant")
 
 # The checkpointer lets the graph persist its state
 # this is a complete memory for the entire graph.
-memory = MemorySaver()
+memory = InMemorySaver()
 part_1_graph = builder.compile(checkpointer=memory, interrupt_before=["sensitive_tools"],)
 
 
