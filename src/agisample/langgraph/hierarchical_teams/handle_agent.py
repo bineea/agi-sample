@@ -8,7 +8,7 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_openai import ChatOpenAI
 from pydantic import Field, create_model
 
-from agisample.framework.graph.hierarchical_agent_teams.web_tool import create_tavily_tool, scrape_webpages
+from agisample.langgraph.hierarchical_teams.web_tool import create_tavily_tool, scrape_webpages
 
 
 def create_agent(

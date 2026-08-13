@@ -8,9 +8,9 @@ from langchain_openai import ChatOpenAI
 from langgraph.constants import END, START
 from langgraph.graph import StateGraph
 
-from agisample.framework.graph.hierarchical_agent_teams.document_tool import WORKING_DIRECTORY, write_document, \
+from agisample.langgraph.hierarchical_teams.document_tool import WORKING_DIRECTORY, write_document, \
     edit_document, read_document, create_outline, python_repl
-from agisample.framework.graph.hierarchical_agent_teams.handle_agent import create_agent, agent_node, \
+from agisample.langgraph.hierarchical_teams.handle_agent import create_agent, agent_node, \
     create_team_supervisor
 
 

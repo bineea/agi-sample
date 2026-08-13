@@ -7,9 +7,9 @@ from langchain_openai.chat_models import ChatOpenAI
 from langgraph.constants import START, END
 from langgraph.graph import StateGraph
 
-from agisample.framework.graph.hierarchical_agent_teams.handle_agent import create_team_supervisor, agent_node, \
+from agisample.langgraph.hierarchical_teams.handle_agent import create_team_supervisor, agent_node, \
     create_agent
-from agisample.framework.graph.hierarchical_agent_teams.web_tool import scrape_webpages, create_tavily_tool
+from agisample.langgraph.hierarchical_teams.web_tool import scrape_webpages, create_tavily_tool
 
 
 # ResearchTeam graph state

@@ -6,9 +6,9 @@ from langchain_openai.chat_models import ChatOpenAI
 from langgraph.constants import END, START
 from langgraph.graph import StateGraph
 
-from agisample.framework.graph.hierarchical_agent_teams.document_team import authoring_chain
-from agisample.framework.graph.hierarchical_agent_teams.handle_agent import create_team_supervisor
-from agisample.framework.graph.hierarchical_agent_teams.web_team import research_chain
+from agisample.langgraph.hierarchical_teams.document_team import authoring_chain
+from agisample.langgraph.hierarchical_teams.handle_agent import create_team_supervisor
+from agisample.langgraph.hierarchical_teams.web_team import research_chain
 
 llm = ChatOpenAI(model="gpt-4-1106-preview")
 
