@@ -37,7 +37,7 @@ from paddleocr.ppstructure.recovery.recovery_to_doc import sorted_layout_boxes
 from unstructured.partition.auto import partition
 from unstructured.partition.pdf import partition_pdf
 
-from agisample.framework.match.RecoveryToMarkdown import convert_info_markdown
+from agisample.tools.recovery_to_markdown import convert_info_markdown
 
 _ = load_dotenv(find_dotenv())
 
