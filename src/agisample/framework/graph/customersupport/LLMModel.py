@@ -1,7 +1,6 @@
 from datetime import datetime
 
 from dotenv import load_dotenv, find_dotenv
-from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 

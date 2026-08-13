@@ -9,7 +9,7 @@ from langgraph.graph import StateGraph
 
 from agisample.framework.graph.hierarchical_agent_teams.handle_agent import create_team_supervisor, agent_node, \
     create_agent
-from agisample.framework.graph.hierarchical_agent_teams.web_tool import scrape_webpages, tavily_tool
+from agisample.framework.graph.hierarchical_agent_teams.web_tool import scrape_webpages, create_tavily_tool
 
 
 # ResearchTeam graph state
@@ -28,7 +28,7 @@ llm = ChatOpenAI(model="gpt-4-1106-preview")
 
 search_agent = create_agent(
     llm,
-    [tavily_tool],
+    [create_tavily_tool()],
     "You are a research assistant who can search for up-to-date info using the tavily search engine.",
 )
 search_node = functools.partial(agent_node, agent=search_agent, name="Search")

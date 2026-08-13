@@ -1,12 +1,12 @@
 from typing import List
 
 from langchain_community.document_loaders import WebBaseLoader
-from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain_core.tools import tool
+from langchain_tavily import TavilySearch
 
 
 def create_tavily_tool():
-    return TavilySearchResults(max_results=5)
+    return TavilySearch(max_results=5)
 
 
 @tool
