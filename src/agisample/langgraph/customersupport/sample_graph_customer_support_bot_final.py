@@ -9,8 +9,8 @@ from pydantic.v1 import BaseModel
 from typing_extensions import TypedDict
 from langgraph.graph.message import AnyMessage, add_messages
 
-from agisample.framework.graph.customersupport.FetchFlightInfo import fetch_user_flight_information
-from agisample.framework.graph.customersupport.LLMModel import part_1_assistant_runnable, part_1_safe_tools, \
+from agisample.langgraph.customersupport.fetch_flight_info import fetch_user_flight_information
+from agisample.langgraph.customersupport.llm_model import part_1_assistant_runnable, part_1_safe_tools, \
     sensitive_tool_names, part_1_sensitive_tools
 
 
@@ -82,8 +82,8 @@ class Assistant:
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.graph import END, StateGraph, START
 from langgraph.prebuilt import tools_condition
-from agisample.framework.graph.customersupport.HandleTool import create_tool_node_with_fallback, _print_event
-from agisample.framework.graph.customersupport.InitDatabase import backup_file, db
+from agisample.langgraph.customersupport.handle_tool import create_tool_node_with_fallback, _print_event
+from agisample.langgraph.customersupport.init_database import backup_file, db
 
 builder = StateGraph(State)
 

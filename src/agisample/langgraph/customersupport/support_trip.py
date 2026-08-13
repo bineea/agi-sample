@@ -3,7 +3,7 @@ from typing import Optional
 
 from langchain_core.tools import tool
 
-from agisample.framework.graph.customersupport.InitDatabase import db
+from agisample.langgraph.customersupport.init_database import db
 
 
 @tool

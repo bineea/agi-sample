@@ -7,7 +7,7 @@ from dotenv import load_dotenv, find_dotenv
 from langchain_core.runnables import ensure_config
 from langchain_core.tools import tool
 
-from agisample.framework.graph.customersupport.InitDatabase import db
+from agisample.langgraph.customersupport.init_database import db
 
 _ = load_dotenv(find_dotenv())
 

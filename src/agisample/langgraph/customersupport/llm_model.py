@@ -4,13 +4,13 @@ from dotenv import load_dotenv, find_dotenv
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 
-from agisample.framework.graph.customersupport.BookCar import search_car_rentals, update_car_rental, book_car_rental, \
+from agisample.langgraph.customersupport.book_car import search_car_rentals, update_car_rental, book_car_rental, \
     cancel_car_rental
-from agisample.framework.graph.customersupport.BookHotel import search_hotels, book_hotel, update_hotel, cancel_hotel
-from agisample.framework.graph.customersupport.FetchFlightInfo import fetch_user_flight_information, search_flights, \
+from agisample.langgraph.customersupport.book_hotel import search_hotels, book_hotel, update_hotel, cancel_hotel
+from agisample.langgraph.customersupport.fetch_flight_info import fetch_user_flight_information, search_flights, \
     update_ticket_to_new_flight, cancel_ticket
-from agisample.framework.graph.customersupport.LookupPolicy import lookup_policy
-from agisample.framework.graph.customersupport.SupportTrip import search_trip_recommendations, update_excursion, \
+from agisample.langgraph.customersupport.lookup_policy import lookup_policy
+from agisample.langgraph.customersupport.support_trip import search_trip_recommendations, update_excursion, \
     cancel_excursion, book_excursion
 
 
