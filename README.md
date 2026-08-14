@@ -72,7 +72,7 @@
 | AgentScope | `src/agisample/agentscope/sample_agentscope.py` | AgentScope Agent、工具确认、流式输出示例 | AgentScope |
 | MiniCPM RAG | `src/agisample/local_models/mini_cpm_rag.py` | 本地模型/Gradio 风格 RAG 示例 | MiniCPM、Gradio |
 | Langflow 集成 | `src/agisample/integrations/langflow_process.py` | Langflow 调用样例 | Langflow |
-| 降维示例 | `src/agisample/ml/dimensionality_reduction/sample_reduce_dimension_process.py` | 传统机器学习降维实验 | scikit-learn 等 |
+| 降维示例 | `src/agisample/machine_learning/dimensionality_reduction/sample_reduce_dimension_process.py` | 传统机器学习降维实验 | scikit-learn 等 |
 
 ## 环境准备
 
