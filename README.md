@@ -26,25 +26,31 @@
     ├── common/                   # 通用能力：连接、配置、路径等
     ├── langchain/                # LangChain 相关 demo
     │   ├── agents/               # Agent、Function Calling、工具调用
+    │   ├── code/                 # 代码生成、代码评审等 LLM 编程样例
+    │   ├── document/             # 文档/文件读取与 prompt 处理
     │   ├── extraction/           # 结构化输出、信息抽取、LangExtract
     │   ├── multimodal/           # 多模态/图像相关样例
     │   ├── rag/                  # RAG、重排序、问答链路
     │   ├── sql/                  # Text-to-SQL / Vanna 样例
     │   └── vectorstores/         # Embedding、FAISS、Elasticsearch 向量存储
-    ├── langgraph/                # LangGraph 工作流、客服机器人、多 Agent 团队等样例
+    ├── langgraph/                # LangGraph 样例
+    │   ├── basic/                # StateGraph 基础图、Flowgram 编译等入门样例
+    │   ├── customersupport/      # 客服机器人：航班、酒店、租车等工具编排
+    │   ├── hierarchical_teams/   # 分层多 Agent 团队（web/document 团队）
+    │   └── a2a/                  # 双 Agent A2A 协议双向互调 demo
     ├── agentscope/               # AgentScope 框架样例
     ├── document_ai/              # 文档智能、OCR、发票/汇款/简历附件处理
     │   ├── azure_document_intelligence/
     │   └── resume_downloader/
     ├── local_models/             # 本地模型和 Gradio demo，例如 MiniCPM RAG
     ├── integrations/             # Langflow 等外部组件集成
-    ├── machine_learning/                       # 传统机器学习、匹配、降维等 demo
-    ├── framework/                # 旧路径兼容层 + 尚未迁移的复杂 demo
+    ├── machine_learning/         # 传统机器学习、匹配、降维等 demo
+    ├── tools/                    # 通用工具脚本（组合查找、Markdown 恢复、邮件信息处理）
     ├── generic/                  # 旧路径兼容层
     └── base/                     # 旧路径兼容层
 ```
 
-> 说明：本轮整理采用低风险迁移策略。低耦合 demo 已迁移到新的主题目录；`framework/graph`、`framework/match` 等内部依赖较多的目录暂时保留，后续可分阶段继续拆分。
+> 说明：原 `framework/` 目录已按主题完成迁移并删除——图示例迁入 `langgraph/`（`basic/`、`customersupport/`、`hierarchical_teams/`），信息抽取迁入 `langchain/extraction/`，代码与文档处理迁入 `langchain/code/`、`langchain/document/`，传统 ML 迁入 `machine_learning/`，通用工具迁入 `tools/`。
 
 ## 功能示例索引
 
@@ -56,9 +62,10 @@
 | 向量库管理 | `src/agisample/langchain/vectorstores/sample_data_vector_manager.py` | FAISS 本地向量库保存、加载、检索 | LangChain Community、FAISS |
 | Elasticsearch 向量存储 | `src/agisample/langchain/vectorstores/sample_data_es_manager.py` | ElasticsearchStore 连接样例 | Elasticsearch、LangChain |
 | 结构化输出 | `src/agisample/langchain/extraction/sample_structured_output_process.py` | Pydantic 结构化输出和 ReAct 风格样例 | LangChain、Pydantic |
-| LangGraph 基础图 | `src/agisample/framework/graph/SampleGraphBasicChatbot.py` | 基础 StateGraph chatbot 示例 | LangGraph、LangChain |
-| LangGraph 客服机器人 | `src/agisample/framework/graph/customersupport/SampleGraphCustomerSupportBotFinal.py` | 航班、酒店、租车、旅行推荐工具编排 | LangGraph、SQLite、LangChain |
-| Flowgram 编译 | `src/agisample/framework/graph/SampleGraphByFlowgram3.py` | 从 flow.json 编译执行图 | LangGraph、Jinja2 |
+| LangGraph 基础图 | `src/agisample/langgraph/basic/sample_graph_basic_chatbot.py` | 基础 StateGraph chatbot 示例 | LangGraph、LangChain |
+| LangGraph 客服机器人 | `src/agisample/langgraph/customersupport/sample_graph_customer_support_bot_final.py` | 航班、酒店、租车、旅行推荐工具编排 | LangGraph、SQLite、LangChain |
+| Flowgram 编译 | `src/agisample/langgraph/basic/sample_graph_by_flowgram3.py` | 从 flow.json 编译执行图 | LangGraph、Jinja2 |
+| A2A 双向互调 | `src/agisample/langgraph/a2a/client.py`（先运行同目录 `server_a.py`、`server_b.py`） | 两个 LangGraph ReAct Agent 通过 A2A 协议双向互调，hop 上限防死循环 | LangGraph、a2a-sdk、uvicorn |
 | Azure 文档读取 | `src/agisample/document_ai/azure_document_intelligence/prebuilt_read.py` | Azure Document Intelligence Read 模型示例 | Azure Document Intelligence |
 | Azure 发票分析 | `src/agisample/document_ai/azure_document_intelligence/prebuilt_invoice.py` | Azure 预构建发票模型示例 | Azure Document Intelligence |
 | 简历附件下载 | `src/agisample/document_ai/resume_downloader/download_resume_file.py` | 分页查询、解析附件 ID、下载文件 | requests |
@@ -83,6 +90,7 @@ py -3.13 -m venv .venv
 - 本地模型/前端：`gradio`、对应模型依赖
 - 传统 ML：`scikit-learn`、`torch`、`transformers`
 - LangChain v1 生态：`langchain`、`langchain-openai`、`langchain-community`、`langchain-elasticsearch`、`langgraph`、按需使用的 `langchain-classic` / `langchain-experimental`
+- Agent 互调：`a2a-sdk`（已沉淀到 `requirements.txt`）
 - 其他工具：`agentscope`、`vanna`、`cohere`
 
 建议在运行具体 demo 前，根据 import 报错补充依赖，或把稳定需要的依赖逐步沉淀到 `requirements.txt`。
@@ -152,7 +160,7 @@ $env:PYTHONPATH='src'; .\.venv\Scripts\python.exe -m compileall -q src/agisample
 ### 4. LangGraph 基础 Chatbot
 
 ```bash
-.\\.venv\\Scripts\\python.exe src/agisample/framework/graph/SampleGraphBasicChatbot.py
+.\\.venv\\Scripts\\python.exe src/agisample/langgraph/basic/sample_graph_basic_chatbot.py
 ```
 
 ### 5. Azure Document Intelligence 示例
@@ -182,7 +190,7 @@ PYTHONPATH=src python src/agisample/document_ai/resume_downloader/download_resum
 
 - `data/`：保存样例 JSON、Flowgram 输入、FAISS 索引等小型数据。
 - `docs/`：保存 PDF、压缩包、测试文档等输入资料。
-- `src/agisample/framework/*/data_level0.bin`、`chroma.sqlite3` 等属于向量库或 Chroma 生成产物，后续建议迁移到 `data/` 或加入 `.gitignore`，避免源码目录混入运行时数据。
+- 各示例运行产生的 `data_level0.bin`、`chroma.sqlite3` 等属于向量库或 Chroma 生成产物，建议统一放到 `data/` 或加入 `.gitignore`，避免源码目录混入运行时数据。
 - `downloads/` 已在 `.gitignore` 中，用于保存下载脚本输出。
 
 ## 开发约定
@@ -191,7 +199,7 @@ PYTHONPATH=src python src/agisample/document_ai/resume_downloader/download_resum
 
 1. 按主题选择目录：
    - LangChain 示例放到 `agisample/langchain/`；
-   - LangGraph 示例放到 `agisample/langgraph/` 或现有 `framework/graph` 后续迁移目录；
+   - LangGraph 示例放到 `agisample/langgraph/`；
    - 文档智能和文件解析放到 `agisample/document_ai/`；
    - 本地模型放到 `agisample/local_models/`；
    - 外部系统集成放到 `agisample/integrations/`；
@@ -204,31 +212,21 @@ PYTHONPATH=src python src/agisample/document_ai/resume_downloader/download_resum
 
 ## 旧路径兼容说明
 
-为降低迁移风险，部分旧路径仍保留为兼容层，例如：
-
-```python
-from agisample.framework.SampleRagProcess import SampleRagProcess
-```
-
-仍可导入，但新代码建议使用新路径：
+原 `framework/` 目录已完成迁移并删除，旧的 `agisample.framework.*` import 不再可用，请改用新路径，例如：
 
 ```python
 from agisample.langchain.rag.sample_rag_process import SampleRagProcess
 ```
 
-后续当 README 和示例全部切换到新路径后，可以逐步删除 `framework/`、`generic/`、`base/` 中的兼容 shim。
+`generic/`、`base/` 目前仍保留为旧路径兼容层。后续当 README 和示例全部切换到新路径后，可以逐步删除 `generic/`、`base/` 中的兼容 shim。
 
 ## 后续整理建议
 
-本轮已经完成低风险主题包整理。后续可以继续分阶段处理：
+本轮已经完成 `framework/` 全量迁移并删除该目录（图示例迁入 `langgraph/`，抽取/代码/文档处理迁入 `langchain/`，传统 ML 迁入 `machine_learning/`，通用工具迁入 `tools/`）。后续可以继续分阶段处理：
 
-1. 将 `framework/graph` 整体迁移到 `langgraph/`，同步修改内部绝对 import。
-2. 将 `framework/match` 拆分为：
-   - `document_ai/file_parsing/`：LLM 多格式提取、RecoveryToMarkdown、LangExtract；
-   - `ml/matching/`：RandomForest、GBDT、EncodeOnly、FindCombinations。
-3. 增加统一路径工具，例如 `agisample.common.paths.PROJECT_ROOT`，替代各文件中不同层级的 `Path(__file__).resolve().parents[...]`。
-4. 梳理 `requirements.txt`，把核心依赖和可选依赖拆分为 `requirements.txt` / `requirements-dev.txt` / `requirements-optional.txt`。
-5. 为关键 demo 增加 smoke test，避免迁移后导入路径和入口脚本失效。
+1. 增加统一路径工具，例如 `agisample.common.paths.PROJECT_ROOT`，替代各文件中不同层级的 `Path(__file__).resolve().parents[...]`。
+2. 梳理 `requirements.txt`，把核心依赖和可选依赖拆分为 `requirements.txt` / `requirements-dev.txt` / `requirements-optional.txt`。
+3. 为关键 demo 增加 smoke test，避免迁移后导入路径和入口脚本失效。
 
 ## 参考笔记
 
