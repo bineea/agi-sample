@@ -160,3 +160,9 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 .idea/
 
+# SQLite 数据库文件(示例运行时生成的数据产物,不入库)
+*.sqlite
+*.sqlite3
+*.sqlite-journal
+*.sqlite3-journal
+
