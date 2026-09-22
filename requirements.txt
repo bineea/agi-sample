@@ -13,3 +13,4 @@ langgraph==1.2.11
 langsmith==0.10.18
 deepagents==0.7.5
 a2a-sdk==0.3.26
+typesafe-sdk==0.7.1

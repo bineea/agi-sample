@@ -76,6 +76,38 @@
 
 ## 环境准备
 
+### TypeSafe AI 客服工单分析
+
+入口：`src/agisample/integrations/typesafe_demo.py`。
+参考 [官方 Quick start](https://docs.typesafe.ai/introduction/quickstart)，一次请求同时演示：
+
+- `Choice`：选择处理部门（`billing`、`technical`、`sales`），返回置信度及各选项概率。
+- `Score`：依据三个等级评价不满程度，返回分数、评分标准和概率分布；分数可能为小数。
+- `Noul`：判断紧迫性，返回 0～1 的数值，不应直接当作 Python 布尔值使用。
+
+在仓库根目录运行（使用现有 `.venv`，无需重新创建）：
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install typesafe-sdk==0.7.1 python-dotenv==1.0.1
+$env:TYPESAFE_API_KEY = "替换为你的 TypeSafe API 密钥"
+.\.venv\Scripts\python.exe src\agisample\integrations\typesafe_demo.py
+.\.venv\Scripts\python.exe src\agisample\integrations\typesafe_demo.py --text "我被重复扣款了，请协助退款。" --model jev-latest
+```
+
+也可在根目录 `.env` 中设置 `TYPESAFE_API_KEY=你的密钥`；已有环境变量优先。
+密钥从 [TypeSafe 控制台](https://console.typesafe.ai) 获取。
+程序输出中文摘要及完整 JSON（包含实际模型和 token 用量），结果以真实接口返回为准。
+请求设置 30 秒 HTTP 超时，使用 SDK 默认重试策略，因此总耗时可能超过 30 秒。
+输入或密钥缺失返回退出码 2，SDK/API 调用或响应异常返回 1，成功返回 0。
+
+离线验证（模拟 HTTP 响应，不消耗 API 额度）：
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -p test_typesafe_demo.py -v
+```
+
+### 通用环境
+
 建议使用 Python 3.11 或以上版本。
 
 ```powershell
