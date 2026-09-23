@@ -12,7 +12,7 @@ import httpx2
 from typesafe_sdk import RetryPolicy, TypeSafeClient
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-from agisample.integrations import typesafe_demo as demo
+from agisample.integrations import typesafe_jev_demo as demo
 
 
 RESPONSE = {

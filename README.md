@@ -78,7 +78,7 @@
 
 ### TypeSafe AI 客服工单分析
 
-入口：`src/agisample/integrations/typesafe_demo.py`。
+入口：`src/agisample/integrations/typesafe_jev_demo.py`。
 参考 [官方 Quick start](https://docs.typesafe.ai/introduction/quickstart)，一次请求同时演示：
 
 - `Choice`：选择处理部门（`billing`、`technical`、`sales`），返回置信度及各选项概率。
@@ -90,8 +90,8 @@
 ```powershell
 .\.venv\Scripts\python.exe -m pip install typesafe-sdk==0.7.1 python-dotenv==1.0.1
 $env:TYPESAFE_API_KEY = "替换为你的 TypeSafe API 密钥"
-.\.venv\Scripts\python.exe src\agisample\integrations\typesafe_demo.py
-.\.venv\Scripts\python.exe src\agisample\integrations\typesafe_demo.py --text "我被重复扣款了，请协助退款。" --model jev-latest
+.\.venv\Scripts\python.exe src\agisample\integrations\typesafe_jev_demo.py
+.\.venv\Scripts\python.exe src\agisample\integrations\typesafe_jev_demo.py --text "我被重复扣款了，请协助退款。" --model jev-latest
 ```
 
 也可在根目录 `.env` 中设置 `TYPESAFE_API_KEY=你的密钥`；已有环境变量优先。
