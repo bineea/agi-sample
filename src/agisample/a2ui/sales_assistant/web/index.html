@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>销售数据查询助手 · A2UI 示例</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script type="module" src="/app.mjs"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="销售查询助手首页"><span class="brand-mark" aria-hidden="true">▥</span>销售查询助手</a>
+    <span class="mode"><span class="status-dot"></span><span id="mode-label">正在连接服务</span></span>
+  </header>
+  <main class="workspace">
+    <aside class="query-panel">
+      <h1>从一个问题<br>开始看数据。</h1>
+      <p class="intro">按月份和区域查看销售表现，<br>再深入每一笔订单。</p>
+      <form id="query-form">
+        <label for="query">你想查询什么？</label>
+        <textarea id="query" name="query" maxlength="500" rows="4" required>查看本月各区域销售情况</textarea>
+        <button class="submit" type="submit">发送问题 <span aria-hidden="true">↗</span></button>
+      </form>
+      <button id="new-chat" class="a2ui-button new-chat" type="button">新会话</button>
+      <div class="examples">
+        <h2>试试这些问题</h2>
+        <button type="button" data-query="查看本月各区域销售情况">本月各区域销售情况</button>
+        <button type="button" data-query="那上个月呢？">继续追问：那上个月呢？</button>
+        <button type="button" data-query="查看2020-01全部区域销售情况">没有数据的月份</button>
+      </div>
+      <p class="scope-note" id="scope-note">正在读取运行模式。</p>
+    </aside>
+    <section class="content-panel" aria-label="销售查询结果">
+      <div class="result-bar"><span>查询结果</span><span id="status" role="status">准备查询</span></div>
+      <p id="error" class="error" role="alert" hidden></p>
+      <div id="conversation" class="conversation" role="log" aria-label="对话记录"></div>
+      <div id="results" class="results initial" tabindex="-1" aria-busy="false">
+        <p>输入月份和区域，查看销售汇总。</p>
+      </div>
+      <details id="tool-panel" class="protocol-panel" hidden open>
+        <summary>本轮实际工具调用</summary><ul id="tool-log"></ul>
+      </details>
+      <details class="protocol-panel">
+        <summary><span>A2UI 消息查看器</span><span id="trace-count">0 条消息</span></summary>
+        <p>协议 v0.9.1 · 项目自定义目录 · 教学用有限渲染器</p>
+        <pre id="trace" aria-label="最近一次请求和响应"></pre>
+      </details>
+    </section>
+  </main>
+  <footer>Python / SQLite 提供查询，浏览器根据 A2UI 消息生成结果界面。</footer>
+</body>
+</html>

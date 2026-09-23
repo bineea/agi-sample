@@ -1,0 +1,359 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:agisample:a2ui:sales:1",
+  "title": "销售查询教学目录",
+  "description": "A2UI v0.9.1 自定义有限目录。DataTable 为扩展组件；Text 的 variant 为本目录约定。仅支持绝对数据绑定、表格行相对绑定和显式子列表，不支持函数、模板、Markdown或输入双向绑定。",
+  "$defs": {
+    "theme": {
+      "type": "object",
+      "additionalProperties": false
+    },
+    "anyComponent": {
+      "oneOf": [
+        {
+          "$ref": "#/components/Text"
+        },
+        {
+          "$ref": "#/components/Column"
+        },
+        {
+          "$ref": "#/components/Row"
+        },
+        {
+          "$ref": "#/components/Card"
+        },
+        {
+          "$ref": "#/components/Button"
+        },
+        {
+          "$ref": "#/components/DataTable"
+        }
+      ]
+    }
+  },
+  "catalogId": "urn:agisample:a2ui:sales:1",
+  "components": {
+    "Text": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "https://a2ui.org/specification/v0_9/common_types.json#/$defs/ComponentId"
+        },
+        "component": {
+          "const": "Text"
+        },
+        "text": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "path"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "variant": {
+          "enum": [
+            "body",
+            "muted",
+            "h2",
+            "metric"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "component",
+        "text"
+      ],
+      "additionalProperties": false
+    },
+    "Column": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "https://a2ui.org/specification/v0_9/common_types.json#/$defs/ComponentId"
+        },
+        "component": {
+          "const": "Column"
+        },
+        "children": {
+          "allOf": [
+            {
+              "$ref": "https://a2ui.org/specification/v0_9/common_types.json#/$defs/ChildList"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "https://a2ui.org/specification/v0_9/common_types.json#/$defs/ComponentId"
+              }
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "component",
+        "children"
+      ],
+      "additionalProperties": false
+    },
+    "Row": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "https://a2ui.org/specification/v0_9/common_types.json#/$defs/ComponentId"
+        },
+        "component": {
+          "const": "Row"
+        },
+        "children": {
+          "allOf": [
+            {
+              "$ref": "https://a2ui.org/specification/v0_9/common_types.json#/$defs/ChildList"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "https://a2ui.org/specification/v0_9/common_types.json#/$defs/ComponentId"
+              }
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "component",
+        "children"
+      ],
+      "additionalProperties": false
+    },
+    "Card": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "https://a2ui.org/specification/v0_9/common_types.json#/$defs/ComponentId"
+        },
+        "component": {
+          "const": "Card"
+        },
+        "child": {
+          "$ref": "https://a2ui.org/specification/v0_9/common_types.json#/$defs/ComponentId"
+        }
+      },
+      "required": [
+        "id",
+        "component",
+        "child"
+      ],
+      "additionalProperties": false
+    },
+    "Button": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "https://a2ui.org/specification/v0_9/common_types.json#/$defs/ComponentId"
+        },
+        "component": {
+          "const": "Button"
+        },
+        "child": {
+          "$ref": "https://a2ui.org/specification/v0_9/common_types.json#/$defs/ComponentId"
+        },
+        "variant": {
+          "enum": [
+            "default",
+            "primary"
+          ]
+        },
+        "action": {
+          "type": "object",
+          "properties": {
+            "event": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "context": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "path": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "path"
+                        ],
+                        "additionalProperties": false
+                      }
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "name",
+                "context"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "event"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "id",
+        "component",
+        "child",
+        "action"
+      ],
+      "additionalProperties": false
+    },
+    "DataTable": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "https://a2ui.org/specification/v0_9/common_types.json#/$defs/ComponentId"
+        },
+        "component": {
+          "const": "DataTable"
+        },
+        "caption": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "path"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "rows": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "path"
+          ],
+          "additionalProperties": false
+        },
+        "columns": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "align": {
+                "enum": [
+                  "left",
+                  "right"
+                ]
+              }
+            },
+            "required": [
+              "key",
+              "label"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "emptyText": {
+          "type": "string"
+        },
+        "rowAction": {
+          "type": "object",
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "event": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "context": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "path": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "path"
+                        ],
+                        "additionalProperties": false
+                      }
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "name",
+                "context"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "label",
+            "event"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "id",
+        "component",
+        "rows",
+        "columns",
+        "caption",
+        "emptyText"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

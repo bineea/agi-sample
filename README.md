@@ -38,6 +38,7 @@
     │   ├── customersupport/      # 客服机器人：航班、酒店、租车等工具编排
     │   ├── hierarchical_teams/   # 分层多 Agent 团队（web/document 团队）
     │   └── a2a/                  # 双 Agent A2A 协议双向互调 demo
+    ├── a2ui/                     # A2UI 销售查询：协议消息、数据绑定与交互回传
     ├── agentscope/               # AgentScope 框架样例
     ├── document_ai/              # 文档智能、OCR、发票/汇款/简历附件处理
     │   ├── azure_document_intelligence/
@@ -56,6 +57,7 @@
 
 | 主题 | 推荐入口 | 说明 | 主要依赖 |
 | --- | --- | --- | --- |
+| A2UI 数据查询 Agent | [运行说明](src/agisample/a2ui/sales_assistant/README.md) | 大模型工具调用、动态 A2UI、多轮追问与点击；SQLite 负责准确计算 | OpenAI 兼容接口、openai、jsonschema；可显式使用无模型 demo |
 | LangChain Agent | `src/agisample/langchain/agents/sample_agent_process.py` | 工具调用、数学函数、Agent 执行器示例 | LangChain、OpenAI 兼容接口 |
 | JSON 参数 Agent | `src/agisample/langchain/agents/sample_agent_process_by_json.py` | 使用 JSON 字符串作为工具参数的 Agent 示例 | LangChain、OpenAI 兼容接口 |
 | RAG 问答 | `src/agisample/langchain/rag/sample_rag_process.py` | PDF 加载、切分、FAISS 检索和 LLM 回答 | LangChain、FAISS、OpenAI Embeddings |

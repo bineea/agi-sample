@@ -1,0 +1,4 @@
+# Agent 运行依赖；安装到项目 .venv。
+openai==2.54.0
+python-dotenv==1.0.1
+jsonschema==4.26.0
