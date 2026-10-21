@@ -39,6 +39,7 @@
     │   ├── hierarchical_teams/   # 分层多 Agent 团队（web/document 团队）
     │   └── a2a/                  # 双 Agent A2A 协议双向互调 demo
     ├── a2ui/                     # A2UI 销售查询：协议消息、数据绑定与交互回传
+    ├── openui/                   # OpenUI Lang 销售查询：Vue 流式渲染、前端 Query 取数、$变量双向绑定
     ├── agentscope/               # AgentScope 框架样例
     ├── document_ai/              # 文档智能、OCR、发票/汇款/简历附件处理
     │   ├── azure_document_intelligence/
@@ -58,6 +59,7 @@
 | 主题 | 推荐入口 | 说明 | 主要依赖 |
 | --- | --- | --- | --- |
 | A2UI 数据查询 Agent | [运行说明](src/agisample/a2ui/sales_assistant/README.md) | 大模型工具调用、动态 A2UI、多轮追问与点击；SQLite 负责准确计算 | OpenAI 兼容接口、openai、jsonschema；可显式使用无模型 demo |
+| OpenUI 数据查询 Agent | [运行说明](src/agisample/openui/sales_assistant/README.md) | 大模型流式生成 openui-lang，Vue（@openuidev/vue-lang）渲染为 Element Plus/ECharts 组件；Query 语句由前端回调后端取数，$变量绑定支持界面筛选自动刷新 | OpenAI 兼容接口、openai；前端 Node 22+；可显式使用无模型 demo |
 | LangChain Agent | `src/agisample/langchain/agents/sample_agent_process.py` | 工具调用、数学函数、Agent 执行器示例 | LangChain、OpenAI 兼容接口 |
 | JSON 参数 Agent | `src/agisample/langchain/agents/sample_agent_process_by_json.py` | 使用 JSON 字符串作为工具参数的 Agent 示例 | LangChain、OpenAI 兼容接口 |
 | RAG 问答 | `src/agisample/langchain/rag/sample_rag_process.py` | PDF 加载、切分、FAISS 检索和 LLM 回答 | LangChain、FAISS、OpenAI Embeddings |
@@ -215,10 +217,6 @@ PYTHONPATH=src python src/agisample/document_ai/resume_downloader/download_resum
   --page-size 50 \
   --out downloads
 ```
-
-### 7. Deep Agents TypeScript 示例
-
-`examples/langchain/deepagent/sample_deep_agent.ts` 是 JavaScript/TypeScript 生态示例，不属于 Python package，也不使用 `requirements.txt` 安装依赖。运行前请在单独的 Node.js 项目中安装 npm 依赖。
 
 ## 数据与生成产物
 
